@@ -16,3 +16,16 @@ export const validateRegistration = [
     .isLength({ min: 12, max: 128 })
     .withMessage("Password must be between 12 and 128 characters."),
 ];
+
+export const validateLogin = [
+  body("email")
+    .trim()
+    .isEmail()
+    .withMessage("Please provide a valid email address."),
+
+  body("password")
+    .isString()
+    .notEmpty()
+    .isLength({ max: 128 })
+    .withMessage("Please provide a valid password."),
+];

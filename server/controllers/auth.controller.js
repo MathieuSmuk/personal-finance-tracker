@@ -9,6 +9,11 @@ const ARGON2_OPTIONS = {
   parallelism: 1,
 };
 
+const DUMMY_PASSWORD_HASH = await argon2.hash(
+  "ThisPasswordIsNeverUsedForLogin",
+  ARGON2_OPTIONS,
+);
+
 function regenerateSession(req) {
   return new Promise((resolve, reject) => {
     req.session.regenerate((error) => {
@@ -72,6 +77,54 @@ export async function registerUser(req, res) {
 
     return res.status(500).json({
       message: "Unable to register user.",
+    });
+  }
+}
+
+export async function loginUser(req, res) {
+  const { email, password } = req.body;
+  const normalizedEmail = email.toLowerCase();
+
+  try {
+    const result = await pool.query(
+      `SELECT id, name, email, password_hash, created_at
+       FROM users
+       WHERE LOWER(email) = $1`,
+      [normalizedEmail],
+    );
+
+    const user = result.rows[0];
+
+    const hashToVerify = user ? user.password_hash : DUMMY_PASSWORD_HASH;
+
+    const passwordMatches = await argon2.verify(hashToVerify, password);
+
+    if (!user || !passwordMatches) {
+      return res.status(401).json({
+        message: "Invalid email or password.",
+      });
+    }
+
+    await regenerateSession(req);
+
+    req.session.userId = user.id;
+
+    await saveSession(req);
+
+    return res.status(200).json({
+      message: "Login successful.",
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        created_at: user.created_at,
+      },
+    });
+  } catch (error) {
+    console.error("User login failed:", error);
+
+    return res.status(500).json({
+      message: "Unable to log in.",
     });
   }
 }
