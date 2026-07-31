@@ -9,6 +9,32 @@ const ARGON2_OPTIONS = {
   parallelism: 1,
 };
 
+function regenerateSession(req) {
+  return new Promise((resolve, reject) => {
+    req.session.regenerate((error) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+
+      resolve();
+    });
+  });
+}
+
+function saveSession(req) {
+  return new Promise((resolve, reject) => {
+    req.session.save((error) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+
+      resolve();
+    });
+  });
+}
+
 export async function registerUser(req, res) {
   const { name, email, password } = req.body;
   const normalizedEmail = email.toLowerCase();
@@ -25,8 +51,14 @@ export async function registerUser(req, res) {
 
     const user = result.rows[0];
 
+    await regenerateSession(req);
+
+    req.session.userId = user.id;
+
+    await saveSession(req);
+
     return res.status(201).json({
-      message: "User registered successfully.",
+      message: "User registered and authenticated successfully.",
       user,
     });
   } catch (error) {
@@ -40,6 +72,35 @@ export async function registerUser(req, res) {
 
     return res.status(500).json({
       message: "Unable to register user.",
+    });
+  }
+}
+
+export async function getCurrentUser(req, res) {
+  try {
+    const result = await pool.query(
+      `SELECT id, name, email, created_at
+       FROM users
+       WHERE id = $1`,
+      [req.session.userId],
+    );
+
+    if (result.rows.length === 0) {
+      req.session.destroy(() => {});
+
+      return res.status(401).json({
+        message: "Authentication required.",
+      });
+    }
+
+    return res.status(200).json({
+      user: result.rows[0],
+    });
+  } catch (error) {
+    console.error("Unable to retrieve current user:", error);
+
+    return res.status(500).json({
+      message: "Unable to retrieve current user.",
     });
   }
 }

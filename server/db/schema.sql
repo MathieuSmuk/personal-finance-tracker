@@ -120,3 +120,11 @@ ON transactions (category_id);
 CREATE INDEX transactions_user_type_date_idx
 ON transactions (user_id, transaction_type, transaction_date DESC);
 
+CREATE TABLE user_sessions (
+    sid VARCHAR NOT NULL PRIMARY KEY,
+    sess JSON NOT NULL,
+    expire TIMESTAMP(6) NOT NULL
+);
+
+CREATE INDEX user_sessions_expire_idx
+ON user_sessions (expire);
