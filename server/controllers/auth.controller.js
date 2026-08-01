@@ -1,5 +1,10 @@
 import argon2 from "argon2";
 
+import {
+  SESSION_COOKIE_CLEAR_OPTIONS,
+  SESSION_COOKIE_NAME,
+} from "../config/session.js";
+
 import pool from "../db/index.js";
 
 const ARGON2_OPTIONS = {
@@ -30,6 +35,19 @@ function regenerateSession(req) {
 function saveSession(req) {
   return new Promise((resolve, reject) => {
     req.session.save((error) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+
+      resolve();
+    });
+  });
+}
+
+function destroySession(req) {
+  return new Promise((resolve, reject) => {
+    req.session.destroy((error) => {
       if (error) {
         reject(error);
         return;
@@ -154,6 +172,24 @@ export async function getCurrentUser(req, res) {
 
     return res.status(500).json({
       message: "Unable to retrieve current user.",
+    });
+  }
+}
+
+export async function logoutUser(req, res) {
+  try {
+    await destroySession(req);
+
+    res.clearCookie(SESSION_COOKIE_NAME, SESSION_COOKIE_CLEAR_OPTIONS);
+
+    return res.status(200).json({
+      message: "Logout successful.",
+    });
+  } catch (error) {
+    console.error("User logout failed:", error);
+
+    return res.status(500).json({
+      message: "Unable to log out.",
     });
   }
 }
