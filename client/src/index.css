@@ -78,3 +78,72 @@ nav a:hover {
 nav a.active {
   color: #2563eb;
 }
+
+.auth-card {
+  width: min(100%, 32rem);
+  margin: 3rem auto;
+  padding: 2rem;
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 0.75rem;
+  box-shadow: 0 0.75rem 2rem rgb(15 23 42 / 8%);
+}
+
+.auth-card form {
+  display: grid;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.form-field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.form-field label {
+  font-weight: 600;
+}
+
+.form-field input {
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  color: #1f2937;
+  background-color: #ffffff;
+  border: 1px solid #9ca3af;
+  border-radius: 0.4rem;
+}
+
+.form-field input:focus {
+  border-color: #2563eb;
+  outline: 2px solid rgb(37 99 235 / 20%);
+}
+
+.form-field small {
+  color: #6b7280;
+}
+
+.auth-card button {
+  padding: 0.75rem 1rem;
+  color: #ffffff;
+  font-weight: 600;
+  background-color: #2563eb;
+  border: 0;
+  border-radius: 0.4rem;
+}
+
+.auth-card button:hover:not(:disabled) {
+  background-color: #1d4ed8;
+}
+
+.auth-card button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-error {
+  padding: 0.75rem;
+  color: #991b1b;
+  background-color: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 0.4rem;
+}
