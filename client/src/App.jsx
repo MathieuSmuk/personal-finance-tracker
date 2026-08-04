@@ -1,5 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 
+import GuestRoute from "./components/auth/GuestRoute";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 import Layout from "./components/layout/Layout";
 import Accounts from "./pages/Accounts";
 import AddTransaction from "./pages/AddTransaction";
@@ -12,15 +14,20 @@ import Transactions from "./pages/Transactions";
 function App() {
   return (
     <Routes>
-      <Route element={<Layout />}>
-        <Route index element={<Dashboard />} />
-        <Route path="accounts" element={<Accounts />} />
-        <Route path="transactions" element={<Transactions />} />
-        <Route path="transactions/new" element={<AddTransaction />} />
+      <Route element={<ProtectedRoute />}>
+        <Route element={<Layout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="accounts" element={<Accounts />} />
+          <Route path="transactions" element={<Transactions />} />
+          <Route path="transactions/new" element={<AddTransaction />} />
+        </Route>
       </Route>
 
-      <Route path="login" element={<Login />} />
-      <Route path="register" element={<Register />} />
+      <Route element={<GuestRoute />}>
+        <Route path="login" element={<Login />} />
+        <Route path="register" element={<Register />} />
+      </Route>
+
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

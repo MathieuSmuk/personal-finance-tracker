@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import API_URL from "../config/api";
+import { useAuth } from "../hooks/useAuth";
 
 function Register() {
   const navigate = useNavigate();
+  const { register } = useAuth();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -19,28 +20,11 @@ function Register() {
     setSubmitting(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/auth/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          name: name.trim(),
-          email: email.trim(),
-          password,
-        }),
+      await register({
+        name: name.trim(),
+        email: email.trim(),
+        password,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        const message = data.errors
-          ? data.errors.map((item) => item.message).join(" ")
-          : data.message;
-
-        throw new Error(message || "Unable to register.");
-      }
 
       navigate("/", { replace: true });
     } catch (error) {

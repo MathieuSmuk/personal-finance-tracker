@@ -60,9 +60,29 @@ nav {
   margin: 0 auto;
 }
 
-nav div {
+.nav-links,
+.nav-user {
   display: flex;
+  align-items: center;
   gap: 1rem;
+}
+
+.nav-user span {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.nav-user button {
+  padding: 0.5rem 0.75rem;
+  color: #ffffff;
+  font-weight: 600;
+  background-color: #dc2626;
+  border: 0;
+  border-radius: 0.4rem;
+}
+
+.nav-user button:hover {
+  background-color: #b91c1c;
 }
 
 nav a {

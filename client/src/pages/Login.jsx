@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
-import API_URL from "../config/api";
+import { useAuth } from "../hooks/useAuth";
 
 function Login() {
   const navigate = useNavigate();
@@ -11,6 +11,15 @@ function Login() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const { login } = useAuth();
+  const location = useLocation();
+
+  const previousLocation = location.state?.from;
+
+  const destination = previousLocation
+    ? `${previousLocation.pathname}${previousLocation.search}${previousLocation.hash}`
+    : "/";
+
   async function handleSubmit(event) {
     event.preventDefault();
 
@@ -18,29 +27,12 @@ function Login() {
     setSubmitting(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          email: email.trim(),
-          password,
-        }),
+      await login({
+        email: email.trim(),
+        password,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        const message = data.errors
-          ? data.errors.map((item) => item.message).join(" ")
-          : data.message;
-
-        throw new Error(message || "Unable to log in.");
-      }
-
-      navigate("/", { replace: true });
+      navigate(destination, { replace: true });
     } catch (error) {
       setError(error.message);
     } finally {
