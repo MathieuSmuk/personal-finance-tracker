@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../hooks/useAuth";
+import ThemeToggle from "../components/theme/ThemeToggle";
 
 function Login() {
   const navigate = useNavigate();
@@ -42,6 +43,9 @@ function Login() {
 
   return (
     <main>
+      <div className="auth-theme-control">
+        <ThemeToggle />
+      </div>
       <section className="auth-card">
         <h1>Log In</h1>
         <p>Welcome back to your financial dashboard.</p>

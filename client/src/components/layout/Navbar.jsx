@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../hooks/useAuth";
+import ThemeToggle from "../theme/ThemeToggle";
 
 function Navbar() {
   const { user, logout } = useAuth();
@@ -35,7 +36,13 @@ function Navbar() {
         <div className="nav-user">
           <span>Signed in as {user.name}</span>
 
-          <button type="button" onClick={handleLogout}>
+          <ThemeToggle />
+
+          <button
+            type="button"
+            className="logout-button"
+            onClick={handleLogout}
+          >
             Log Out
           </button>
         </div>

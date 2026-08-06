@@ -1,3 +1,48 @@
+/* =========================
+   Theme variables
+========================= */
+
+:root {
+  --background: #f3f4f6;
+  --surface: #ffffff;
+  --surface-secondary: #f9fafb;
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --border: #d1d5db;
+  --input-border: #9ca3af;
+  --input-background: #ffffff;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --link: #2563eb;
+  --danger: #dc2626;
+  --danger-hover: #b91c1c;
+  --error-text: #991b1b;
+  --error-background: #fee2e2;
+  --error-border: #fecaca;
+  --shadow: rgb(15 23 42 / 8%);
+}
+
+[data-theme="dark"] {
+  --background: #111827;
+  --surface: #1f2937;
+  --surface-secondary: #273449;
+  --text-primary: #f9fafb;
+  --text-secondary: #cbd5e1;
+  --border: #374151;
+  --input-border: #4b5563;
+  --input-background: #111827;
+  --link: #60a5fa;
+  --danger-hover: #ef4444;
+  --error-text: #fecaca;
+  --error-background: #450a0a;
+  --error-border: #991b1b;
+  --shadow: rgb(0 0 0 / 25%);
+}
+
+/* =========================
+   Global foundation
+========================= */
+
 * {
   box-sizing: border-box;
 }
@@ -12,14 +57,21 @@ html {
     sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: #1f2937;
-  background-color: #f3f4f6;
+  color: var(--text-primary);
+  background-color: var(--background);
 }
 
 body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
+  color: var(--text-primary);
+  background-color: var(--background);
+}
+
+header {
+  background-color: var(--surface);
+  border-bottom: 1px solid var(--border);
 }
 
 button,
@@ -46,10 +98,9 @@ p {
   margin-top: 0;
 }
 
-header {
-  background-color: #ffffff;
-  border-bottom: 1px solid #d1d5db;
-}
+/* =========================
+   Navigation
+========================= */
 
 nav {
   display: flex;
@@ -68,45 +119,34 @@ nav {
 }
 
 .nav-user span {
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 0.9rem;
 }
 
-.nav-user button {
-  padding: 0.5rem 0.75rem;
-  color: #ffffff;
-  font-weight: 600;
-  background-color: #dc2626;
-  border: 0;
-  border-radius: 0.4rem;
-}
-
-.nav-user button:hover {
-  background-color: #b91c1c;
-}
-
 nav a {
-  color: #374151;
+  color: var(--text-primary);
   font-weight: 600;
   text-decoration: none;
 }
 
-nav a:hover {
-  color: #2563eb;
+nav a:hover,
+nav a.active {
+  color: var(--link);
 }
 
-nav a.active {
-  color: #2563eb;
-}
+/* =========================
+   Authentication forms
+========================= */
 
 .auth-card {
   width: min(100%, 32rem);
   margin: 3rem auto;
   padding: 2rem;
-  background-color: #ffffff;
-  border: 1px solid #d1d5db;
+  color: var(--text-primary);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 0.75rem;
-  box-shadow: 0 0.75rem 2rem rgb(15 23 42 / 8%);
+  box-shadow: 0 0.75rem 2rem var(--shadow);
 }
 
 .auth-card form {
@@ -127,43 +167,108 @@ nav a.active {
 .form-field input {
   width: 100%;
   padding: 0.7rem 0.8rem;
-  color: #1f2937;
-  background-color: #ffffff;
-  border: 1px solid #9ca3af;
+  color: var(--text-primary);
+  background-color: var(--input-background);
+  border: 1px solid var(--input-border);
   border-radius: 0.4rem;
 }
 
 .form-field input:focus {
-  border-color: #2563eb;
+  border-color: var(--primary);
   outline: 2px solid rgb(37 99 235 / 20%);
 }
 
 .form-field small {
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 
-.auth-card button {
-  padding: 0.75rem 1rem;
-  color: #ffffff;
+/* =========================
+   Buttons and controls
+========================= */
+
+.auth-card form button,
+.theme-toggle,
+.logout-button {
   font-weight: 600;
-  background-color: #2563eb;
-  border: 0;
   border-radius: 0.4rem;
 }
 
-.auth-card button:hover:not(:disabled) {
-  background-color: #1d4ed8;
+.auth-card form button {
+  padding: 0.75rem 1rem;
+  color: #ffffff;
+  background-color: var(--primary);
+  border: 0;
 }
 
-.auth-card button:disabled {
+.auth-card form button:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+}
+
+button:disabled {
   cursor: not-allowed;
   opacity: 0.6;
 }
 
 .form-error {
   padding: 0.75rem;
-  color: #991b1b;
-  background-color: #fee2e2;
-  border: 1px solid #fecaca;
+  color: var(--error-text);
+  background-color: var(--error-background);
+  border: 1px solid var(--error-border);
   border-radius: 0.4rem;
+}
+
+.theme-toggle {
+  padding: 0.5rem 0.75rem;
+  color: var(--text-primary);
+  background-color: var(--surface-secondary);
+  border: 1px solid var(--border);
+}
+
+.theme-toggle:hover {
+  border-color: var(--link);
+}
+
+.logout-button {
+  padding: 0.5rem 0.75rem;
+  color: #ffffff;
+  background-color: var(--danger);
+  border: 0;
+}
+
+.logout-button:hover {
+  background-color: var(--danger-hover);
+}
+
+.auth-theme-control {
+  display: flex;
+  justify-content: flex-end;
+  width: min(100%, 32rem);
+  margin: 1rem auto 0;
+}
+
+/* =========================
+   Theme transitions
+========================= */
+
+body,
+header,
+.auth-card,
+.form-field input,
+.theme-toggle {
+  transition:
+    color 150ms ease,
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+/* No Animations */
+
+@media (prefers-reduced-motion: reduce) {
+  body,
+  header,
+  .auth-card,
+  .form-field input,
+  .theme-toggle {
+    transition: none;
+  }
 }
