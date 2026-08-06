@@ -3,6 +3,7 @@ import express from "express";
 import dotenv from "dotenv";
 
 import pool from "./db/index.js";
+import accountRoutes from "./routes/account.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import sessionMiddleware from "./config/session.js";
 
@@ -26,6 +27,7 @@ app.use(express.json());
 app.use(sessionMiddleware);
 
 app.use("/api/auth", authRoutes);
+app.use("/api/accounts", accountRoutes);
 
 app.get("/", (req, res) => {
   res.json({
