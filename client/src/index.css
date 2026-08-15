@@ -14,6 +14,7 @@
   --primary: #2563eb;
   --primary-hover: #1d4ed8;
   --link: #2563eb;
+  --income: #15803d;
   --danger: #dc2626;
   --danger-hover: #b91c1c;
   --error-text: #991b1b;
@@ -32,6 +33,7 @@
   --input-border: #4b5563;
   --input-background: #111827;
   --link: #60a5fa;
+  --income: #4ade80;
   --danger-hover: #ef4444;
   --error-text: #fecaca;
   --error-background: #450a0a;
@@ -250,12 +252,12 @@ button:disabled {
    Theme transitions
 ========================= */
 
-@media (max-width: 800px) {
+/* @media (max-width: 800px) {
   .account-form {
     grid-template-columns: 1fr;
     align-items: stretch;
   }
-}
+} */
 
 body,
 header,
@@ -264,7 +266,12 @@ header,
 .account-card,
 .form-field input,
 .form-field select,
-.theme-toggle {
+.theme-toggle,
+.transaction-form-card,
+.transactions-list-card,
+.transaction-form select,
+.transaction-form input,
+.transaction-form textarea {
   transition:
     color 150ms ease,
     background-color 150ms ease,
@@ -282,7 +289,12 @@ header,
   .form-field input,
   .form-field select,
   .theme-toggle,
-  .tooltip-content {
+  .tooltip-content,
+  .transaction-form-card,
+  .transactions-list-card,
+  .transaction-form select,
+  .transaction-form input,
+  .transaction-form textarea {
     transition: none;
   }
 }
@@ -468,4 +480,260 @@ header,
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
+}
+
+/* ========================================
+   TRANSACTIONS/ADD TRANSACTION PAGES
+======================================== */
+
+.transactions-page {
+  display: grid;
+  gap: 2rem;
+}
+
+.add-transaction-page {
+  display: grid;
+  gap: 2rem;
+}
+
+.transactions-page .page-heading,
+.add-transaction-page .page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.transactions-page .page-heading h1,
+.add-transaction-page .page-heading h1 {
+  margin-bottom: 0.35rem;
+}
+
+.transactions-page .page-heading p,
+.add-transaction-page .page-heading p {
+  margin-bottom: 0;
+  color: var(--text-secondary);
+}
+
+.transactions-page .primary-link-button,
+.add-transaction-page .secondary-link-button {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 0.4rem;
+}
+
+.transactions-page .primary-link-button {
+  color: #ffffff;
+  background-color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.transactions-page .primary-link-button:hover {
+  color: #ffffff;
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
+
+.transactions-page .primary-link-button:focus-visible,
+.add-transaction-page .secondary-link-button:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+
+.add-transaction-page .secondary-link-button {
+  color: var(--text-primary);
+  background-color: var(--surface-secondary);
+  border: 1px solid var(--border);
+}
+
+.add-transaction-page .secondary-link-button:hover {
+  color: var(--link);
+  border-color: var(--link);
+}
+
+.transaction-form-card,
+.transactions-list-card {
+  padding: 1.5rem;
+  color: var(--text-primary);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  box-shadow: 0 0.5rem 1.5rem var(--shadow);
+}
+
+.transaction-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.transaction-form select,
+.transaction-form input,
+.transaction-form textarea {
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  color: var(--text-primary);
+  background-color: var(--input-background);
+  border: 1px solid var(--input-border);
+  border-radius: 0.4rem;
+}
+
+.transaction-form select:focus,
+.transaction-form input:focus,
+.transaction-form textarea:focus {
+  border-color: var(--primary);
+  outline: 2px solid rgb(37 99 235 / 20%);
+}
+
+.transaction-notes-field {
+  grid-column: 1 / -1;
+}
+
+.optional-label {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+
+.form-notice,
+.empty-message {
+  color: var(--text-secondary);
+}
+
+.transaction-form .form-error {
+  grid-column: 1 / -1;
+  margin-bottom: 0;
+}
+
+.transaction-submit-button {
+  grid-column: 1 / -1;
+  justify-self: start;
+  padding: 0.75rem 1rem;
+  color: #ffffff;
+  font-weight: 600;
+  background-color: var(--primary);
+  border: 0;
+  border-radius: 0.4rem;
+}
+
+.transaction-submit-button:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+}
+
+.transaction-submit-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.transactions-table-wrapper {
+  overflow-x: auto;
+}
+
+.transactions-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.transactions-table th,
+.transactions-table td {
+  padding: 0.85rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.transactions-table th {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.transactions-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.transaction-description,
+.transaction-notes {
+  display: block;
+}
+
+.transaction-description {
+  font-weight: 600;
+}
+
+.transaction-notes {
+  margin-top: 0.2rem;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.category-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.category-color {
+  flex: 0 0 auto;
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+}
+
+.transaction-amount {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.transaction-income {
+  color: var(--income);
+}
+
+.transaction-expense {
+  color: var(--danger);
+}
+
+@media (max-width: 800px) {
+  .account-form {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .transaction-form {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .transactions-page .page-heading,
+  .add-transaction-page .page-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .transactions-page .primary-link-button,
+  .add-transaction-page .secondary-link-button {
+    width: 100%;
+  }
+
+  .transaction-form {
+    grid-template-columns: 1fr;
+  }
+
+  .transaction-notes-field,
+  .transaction-form .form-error,
+  .transaction-submit-button {
+    grid-column: auto;
+  }
+
+  .transaction-submit-button {
+    width: 100%;
+  }
 }
