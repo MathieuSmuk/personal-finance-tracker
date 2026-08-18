@@ -28,6 +28,8 @@ function Navbar() {
 
           <NavLink to="/accounts">Accounts</NavLink>
 
+          <NavLink to="/categories">Categories</NavLink>
+
           <NavLink to="/transactions">Transactions</NavLink>
 
           <NavLink to="/transactions/new">Add Transaction</NavLink>

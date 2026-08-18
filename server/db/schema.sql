@@ -44,6 +44,7 @@ CREATE TABLE categories (
     name VARCHAR(100) NOT NULL,
     transaction_type VARCHAR(10) NOT NULL,
     color VARCHAR(7),
+    is_archived BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT categories_user_fk
@@ -68,6 +69,14 @@ CREATE TABLE categories (
 
     CONSTRAINT categories_user_id_id_unique
         UNIQUE (user_id, id)
+);
+
+CREATE INDEX categories_user_archive_type_name_idx
+ON categories (
+    user_id,
+    is_archived,
+    transaction_type,
+    name
 );
 
 CREATE TABLE transactions (

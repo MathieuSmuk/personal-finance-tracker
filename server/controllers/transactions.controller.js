@@ -103,6 +103,7 @@ export async function createTransaction(req, res) {
          AND accounts.is_archived = FALSE
          AND categories.id = $3
          AND categories.user_id = $1
+         AND categories.is_archived = FALSE
          AND categories.transaction_type = $4::VARCHAR(10)
        RETURNING
          id,

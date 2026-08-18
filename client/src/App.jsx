@@ -10,6 +10,7 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import Register from "./pages/Register";
 import Transactions from "./pages/Transactions";
+import Categories from "./pages/Categories";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route element={<Layout />}>
           <Route index element={<Dashboard />} />
           <Route path="accounts" element={<Accounts />} />
+          <Route path="categories" element={<Categories />} />
           <Route path="transactions" element={<Transactions />} />
           <Route path="transactions/new" element={<AddTransaction />} />
         </Route>
