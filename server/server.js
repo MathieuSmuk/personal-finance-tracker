@@ -6,6 +6,7 @@ import pool from "./db/index.js";
 import accountRoutes from "./routes/account.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import categoriesRouter from "./routes/categories.routes.js";
+import dashboardRoutes from "./routes/dashboard.routes.js";
 import transactionsRouter from "./routes/transactions.routes.js";
 import sessionMiddleware from "./config/session.js";
 
@@ -31,6 +32,7 @@ app.use(sessionMiddleware);
 app.use("/api/auth", authRoutes);
 app.use("/api/accounts", accountRoutes);
 app.use("/api/categories", categoriesRouter);
+app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/transactions", transactionsRouter);
 
 app.get("/", (req, res) => {

@@ -265,6 +265,10 @@ header,
 .category-restore-button,
 .category-save-button,
 .category-cancel-button,
+.dashboard-summary-card,
+.dashboard-section-card,
+.dashboard-account-card,
+.dashboard-link,
 .form-field input,
 .form-field select,
 .theme-toggle,
@@ -295,6 +299,10 @@ header,
   .category-restore-button,
   .category-save-button,
   .category-cancel-button,
+  .dashboard-summary-card,
+  .dashboard-section-card,
+  .dashboard-account-card,
+  .dashboard-link,
   .form-field input,
   .form-field select,
   .theme-toggle,
@@ -712,6 +720,221 @@ header,
   transform: translateY(0);
 }
 
+/* =========================
+   Financial dashboard
+========================= */
+
+.dashboard-page {
+  display: grid;
+  gap: 2rem;
+}
+
+.dashboard-page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.dashboard-page-heading h1 {
+  margin-bottom: 0.35rem;
+}
+
+.dashboard-page-heading p {
+  margin-bottom: 0;
+  color: var(--text-secondary);
+}
+
+.dashboard-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.75rem;
+}
+
+.dashboard-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 0.4rem;
+}
+
+.dashboard-link-primary {
+  color: #ffffff;
+  background-color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.dashboard-link-primary:hover {
+  color: #ffffff;
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
+
+.dashboard-link-secondary {
+  color: var(--text-primary);
+  background-color: var(--surface-secondary);
+  border: 1px solid var(--border);
+}
+
+.dashboard-link-secondary:hover {
+  color: var(--link);
+  border-color: var(--link);
+}
+
+.dashboard-link:focus-visible,
+.dashboard-text-link:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+
+.dashboard-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.dashboard-summary-card {
+  display: grid;
+  gap: 0.4rem;
+  padding: 1.25rem;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  box-shadow: 0 0.5rem 1.5rem var(--shadow);
+}
+
+.dashboard-summary-label {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.dashboard-summary-value {
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.dashboard-summary-period {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.dashboard-positive {
+  color: var(--income);
+}
+
+.dashboard-negative {
+  color: var(--danger);
+}
+
+.dashboard-section-card {
+  padding: 1.5rem;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  box-shadow: 0 0.5rem 1.5rem var(--shadow);
+}
+
+.dashboard-section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.dashboard-section-heading h2 {
+  margin-bottom: 0.25rem;
+}
+
+.dashboard-section-heading p {
+  margin-bottom: 0;
+  color: var(--text-secondary);
+}
+
+.dashboard-text-link {
+  flex-shrink: 0;
+  color: var(--link);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.dashboard-text-link:hover {
+  text-decoration: underline;
+}
+
+.dashboard-account-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: 1rem;
+}
+
+.dashboard-account-card {
+  padding: 1.1rem;
+  background-color: var(--surface-secondary);
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+}
+
+.dashboard-account-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.dashboard-account-heading h3 {
+  margin-bottom: 0;
+  overflow-wrap: anywhere;
+}
+
+.dashboard-account-heading span {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.dashboard-account-card dl {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.dashboard-account-card dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.dashboard-account-card dt {
+  color: var(--text-secondary);
+}
+
+.dashboard-account-card dd {
+  margin: 0;
+  font-weight: 700;
+  text-align: right;
+}
+
+.dashboard-empty-state {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: 0.75rem;
+}
+
+.dashboard-empty-state p {
+  margin-bottom: 0;
+  color: var(--text-secondary);
+}
+
 /* ========================================
    TRANSACTIONS/ADD TRANSACTION PAGES
 ======================================== */
@@ -944,6 +1167,10 @@ header,
     grid-template-columns: 1fr;
   }
 
+  .dashboard-summary-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
   .transaction-form {
     grid-template-columns: 1fr 1fr;
   }
@@ -959,6 +1186,38 @@ header,
   .transactions-page .primary-link-button,
   .add-transaction-page .secondary-link-button {
     width: 100%;
+  }
+
+  .dashboard-page-heading,
+  .dashboard-section-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .dashboard-actions {
+    width: 100%;
+  }
+
+  .dashboard-actions .dashboard-link {
+    flex: 1;
+  }
+
+  .dashboard-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-text-link {
+    align-self: flex-start;
+  }
+
+  .dashboard-account-card dl div {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .dashboard-account-card dd {
+    text-align: left;
   }
 
   .category-form {
