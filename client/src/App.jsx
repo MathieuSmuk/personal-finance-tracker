@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import Register from "./pages/Register";
 import Transactions from "./pages/Transactions";
 import Categories from "./pages/Categories";
+import EditTransaction from "./pages/EditTransaction";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Route path="categories" element={<Categories />} />
           <Route path="transactions" element={<Transactions />} />
           <Route path="transactions/new" element={<AddTransaction />} />
+          <Route path="transactions/:id/edit" element={<EditTransaction />} />
         </Route>
       </Route>
 

@@ -41,6 +41,7 @@ async function readJsonResponse(response) {
 function Transactions() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState(null);
   const [pageError, setPageError] = useState("");
 
   useEffect(() => {
@@ -65,9 +66,9 @@ function Transactions() {
         setTransactions(
           Array.isArray(data.transactions) ? data.transactions : [],
         );
-      } catch (requestError) {
-        if (requestError.name !== "AbortError") {
-          setPageError(requestError.message);
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          setPageError(error.message);
         }
       } finally {
         if (!controller.signal.aborted) {
@@ -83,6 +84,42 @@ function Transactions() {
     };
   }, []);
 
+  async function handleDelete(transaction) {
+    const confirmed = window.confirm(
+      `Delete "${transaction.description}"? This will permanently remove the transaction and recalculate your balances.`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setPageError("");
+    setDeletingId(transaction.id);
+
+    try {
+      const response = await fetch(`/api/transactions/${transaction.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      const data = await readJsonResponse(response);
+
+      if (!response.ok) {
+        throw new Error(data.message || "Unable to delete transaction.");
+      }
+
+      setTransactions((currentTransactions) =>
+        currentTransactions.filter(
+          (currentTransaction) => currentTransaction.id !== transaction.id,
+        ),
+      );
+    } catch (error) {
+      setPageError(error.message);
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
   if (loading) {
     return <p>Loading transactions...</p>;
   }
@@ -92,6 +129,7 @@ function Transactions() {
       <div className="page-heading">
         <div>
           <h1>Transactions</h1>
+
           <p>Review your recorded income and expenses.</p>
         </div>
 
@@ -123,6 +161,7 @@ function Transactions() {
                   <th scope="col">Account</th>
                   <th scope="col">Category</th>
                   <th scope="col">Amount</th>
+                  <th scope="col">Actions</th>
                 </tr>
               </thead>
 
@@ -170,6 +209,28 @@ function Transactions() {
                     >
                       {transaction.transaction_type === "income" ? "+" : "-"}
                       {formatAmount(transaction.amount)}
+                    </td>
+
+                    <td>
+                      <div className="transaction-actions">
+                        <Link
+                          to={`/transactions/${transaction.id}/edit`}
+                          className="transaction-edit-link"
+                        >
+                          Edit
+                        </Link>
+
+                        <button
+                          type="button"
+                          className="transaction-delete-button"
+                          onClick={() => handleDelete(transaction)}
+                          disabled={deletingId === transaction.id}
+                        >
+                          {deletingId === transaction.id
+                            ? "Deleting..."
+                            : "Delete"}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

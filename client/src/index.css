@@ -276,7 +276,9 @@ header,
 .transactions-list-card,
 .transaction-form select,
 .transaction-form input,
-.transaction-form textarea {
+.transaction-form textarea,
+.transaction-edit-link,
+.transaction-delete-button {
   transition:
     color 150ms ease,
     background-color 150ms ease,
@@ -311,7 +313,9 @@ header,
   .transactions-list-card,
   .transaction-form select,
   .transaction-form input,
-  .transaction-form textarea {
+  .transaction-form textarea,
+  .transaction-edit-link,
+  .transaction-delete-button {
     transition: none;
   }
 }
@@ -939,18 +943,16 @@ header,
    TRANSACTIONS/ADD TRANSACTION PAGES
 ======================================== */
 
-.transactions-page {
-  display: grid;
-  gap: 2rem;
-}
-
-.add-transaction-page {
+.transactions-page,
+.add-transaction-page,
+.edit-transaction-page {
   display: grid;
   gap: 2rem;
 }
 
 .transactions-page .page-heading,
-.add-transaction-page .page-heading {
+.add-transaction-page .page-heading,
+.edit-transaction-page .page-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -958,18 +960,21 @@ header,
 }
 
 .transactions-page .page-heading h1,
-.add-transaction-page .page-heading h1 {
+.add-transaction-page .page-heading h1,
+.edit-transaction-page .page-heading h1 {
   margin-bottom: 0.35rem;
 }
 
 .transactions-page .page-heading p,
-.add-transaction-page .page-heading p {
+.add-transaction-page .page-heading p,
+.edit-transaction-page .page-heading p {
   margin-bottom: 0;
   color: var(--text-secondary);
 }
 
 .transactions-page .primary-link-button,
-.add-transaction-page .secondary-link-button {
+.add-transaction-page .secondary-link-button,
+.edit-transaction-page .secondary-link-button {
   display: inline-flex;
   flex-shrink: 0;
   align-items: center;
@@ -993,18 +998,21 @@ header,
 }
 
 .transactions-page .primary-link-button:focus-visible,
-.add-transaction-page .secondary-link-button:focus-visible {
+.add-transaction-page .secondary-link-button:focus-visible,
+.edit-transaction-page .secondary-link-button:focus-visible {
   outline: 2px solid var(--link);
   outline-offset: 2px;
 }
 
-.add-transaction-page .secondary-link-button {
+.add-transaction-page .secondary-link-button,
+.edit-transaction-page .secondary-link-button {
   color: var(--text-primary);
   background-color: var(--surface-secondary);
   border: 1px solid var(--border);
 }
 
-.add-transaction-page .secondary-link-button:hover {
+.add-transaction-page .secondary-link-button:hover,
+.edit-transaction-page .secondary-link-button:hover {
   color: var(--link);
   border-color: var(--link);
 }
@@ -1079,11 +1087,6 @@ header,
   background-color: var(--primary-hover);
 }
 
-.transaction-submit-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
 .transactions-table-wrapper {
   overflow-x: auto;
 }
@@ -1153,6 +1156,52 @@ header,
   color: var(--danger);
 }
 
+.transaction-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.transaction-edit-link,
+.transaction-delete-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.7rem;
+  font-weight: 600;
+  border-radius: 0.4rem;
+}
+
+.transaction-edit-link {
+  color: var(--text-primary);
+  text-decoration: none;
+  background-color: var(--surface-secondary);
+  border: 1px solid var(--border);
+}
+
+.transaction-edit-link:hover {
+  color: var(--link);
+  border-color: var(--link);
+}
+
+.transaction-edit-link:focus-visible,
+.transaction-delete-button:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+
+.transaction-delete-button {
+  color: #ffffff;
+  background-color: var(--danger);
+  border: 1px solid var(--danger);
+}
+
+.transaction-delete-button:hover:not(:disabled) {
+  background-color: var(--danger-hover);
+  border-color: var(--danger-hover);
+}
+
 @media (max-width: 800px) {
   .account-form {
     grid-template-columns: 1fr;
@@ -1178,13 +1227,15 @@ header,
 
 @media (max-width: 560px) {
   .transactions-page .page-heading,
-  .add-transaction-page .page-heading {
+  .add-transaction-page .page-heading,
+  .edit-transaction-page .page-heading {
     align-items: stretch;
     flex-direction: column;
   }
 
   .transactions-page .primary-link-button,
-  .add-transaction-page .secondary-link-button {
+  .add-transaction-page .secondary-link-button,
+  .edit-transaction-page .secondary-link-button {
     width: 100%;
   }
 

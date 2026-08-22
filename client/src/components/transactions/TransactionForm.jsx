@@ -4,14 +4,46 @@ function getToday() {
   return new Intl.DateTimeFormat("en-CA").format(new Date());
 }
 
-function TransactionForm({ accounts, categories, onTransactionCreated }) {
-  const [accountId, setAccountId] = useState("");
-  const [categoryId, setCategoryId] = useState("");
-  const [transactionType, setTransactionType] = useState("expense");
-  const [amount, setAmount] = useState("");
-  const [description, setDescription] = useState("");
-  const [transactionDate, setTransactionDate] = useState(getToday);
-  const [notes, setNotes] = useState("");
+function getDateInputValue(dateValue) {
+  if (!dateValue) {
+    return getToday();
+  }
+
+  return String(dateValue).slice(0, 10);
+}
+
+function TransactionForm({
+  accounts,
+  categories,
+  initialTransaction = null,
+  onTransactionSaved,
+}) {
+  const editing = initialTransaction !== null;
+
+  const [accountId, setAccountId] = useState(
+    initialTransaction ? String(initialTransaction.account_id) : "",
+  );
+
+  const [categoryId, setCategoryId] = useState(
+    initialTransaction ? String(initialTransaction.category_id) : "",
+  );
+
+  const [transactionType, setTransactionType] = useState(
+    initialTransaction?.transaction_type || "expense",
+  );
+
+  const [amount, setAmount] = useState(initialTransaction?.amount || "");
+
+  const [description, setDescription] = useState(
+    initialTransaction?.description || "",
+  );
+
+  const [transactionDate, setTransactionDate] = useState(
+    getDateInputValue(initialTransaction?.transaction_date),
+  );
+
+  const [notes, setNotes] = useState(initialTransaction?.notes || "");
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -65,8 +97,14 @@ function TransactionForm({ accounts, categories, onTransactionCreated }) {
     setSubmitting(true);
 
     try {
-      const response = await fetch("/api/transactions", {
-        method: "POST",
+      const endpoint = editing
+        ? `/api/transactions/${initialTransaction.id}`
+        : "/api/transactions";
+
+      const method = editing ? "PATCH" : "POST";
+
+      const response = await fetch(endpoint, {
+        method,
         headers: {
           "Content-Type": "application/json",
         },
@@ -85,14 +123,21 @@ function TransactionForm({ accounts, categories, onTransactionCreated }) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Unable to create transaction.");
+        throw new Error(
+          data.message ||
+            (editing
+              ? "Unable to update transaction."
+              : "Unable to create transaction."),
+        );
       }
 
-      setAmount("");
-      setDescription("");
-      setNotes("");
+      if (!editing) {
+        setAmount("");
+        setDescription("");
+        setNotes("");
+      }
 
-      await onTransactionCreated();
+      await onTransactionSaved(data.transaction);
     } catch (requestError) {
       setError(requestError.message);
     } finally {
@@ -105,7 +150,7 @@ function TransactionForm({ accounts, categories, onTransactionCreated }) {
 
   return (
     <section className="transaction-form-card">
-      <h2>Add Transaction</h2>
+      <h2>{editing ? "Edit Transaction" : "Add Transaction"}</h2>
 
       {accounts.length === 0 && (
         <p className="form-notice">
@@ -115,7 +160,7 @@ function TransactionForm({ accounts, categories, onTransactionCreated }) {
 
       {accounts.length > 0 && filteredCategories.length === 0 && (
         <p className="form-notice">
-          Create a {transactionType} category before adding this transaction.
+          Create a {transactionType} category before saving this transaction.
         </p>
       )}
 
@@ -150,6 +195,7 @@ function TransactionForm({ accounts, categories, onTransactionCreated }) {
             {accounts.map((account) => (
               <option key={account.id} value={account.id}>
                 {account.name}
+                {account.is_archived ? " (Archived)" : ""}
               </option>
             ))}
           </select>
@@ -172,6 +218,7 @@ function TransactionForm({ accounts, categories, onTransactionCreated }) {
             {filteredCategories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
+                {category.is_archived ? " (Archived)" : ""}
               </option>
             ))}
           </select>
@@ -256,7 +303,13 @@ function TransactionForm({ accounts, categories, onTransactionCreated }) {
           className="transaction-submit-button"
           disabled={submitting || formUnavailable}
         >
-          {submitting ? "Adding transaction..." : "Add Transaction"}
+          {submitting
+            ? editing
+              ? "Saving changes..."
+              : "Adding transaction..."
+            : editing
+              ? "Save Changes"
+              : "Add Transaction"}
         </button>
       </form>
     </section>

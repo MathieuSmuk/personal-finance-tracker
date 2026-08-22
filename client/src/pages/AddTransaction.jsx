@@ -86,7 +86,7 @@ function AddTransaction() {
     };
   }, []);
 
-  function handleTransactionCreated() {
+  function handleTransactionSaved() {
     navigate("/transactions");
   }
 
@@ -115,7 +115,7 @@ function AddTransaction() {
         <TransactionForm
           accounts={accounts}
           categories={categories}
-          onTransactionCreated={handleTransactionCreated}
+          onTransactionCreated={handleTransactionSaved}
         />
       )}
     </div>
