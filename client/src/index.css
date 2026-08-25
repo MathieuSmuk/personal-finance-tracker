@@ -279,11 +279,14 @@ header,
 .theme-toggle,
 .transaction-form-card,
 .transactions-list-card,
+.transaction-filters-card,
 .transaction-form select,
 .transaction-form input,
 .transaction-form textarea,
 .transaction-edit-link,
-.transaction-delete-button {
+.transaction-delete-button,
+.transaction-apply-button,
+.transaction-clear-button {
   transition:
     color 150ms ease,
     background-color 150ms ease,
@@ -321,11 +324,14 @@ header,
   .tooltip-content,
   .transaction-form-card,
   .transactions-list-card,
+  .transaction-filters-card,
   .transaction-form select,
   .transaction-form input,
   .transaction-form textarea,
   .transaction-edit-link,
-  .transaction-delete-button {
+  .transaction-delete-button,
+  .transaction-apply-button,
+  .transaction-clear-button {
     transition: none;
   }
 }
@@ -1166,13 +1172,105 @@ header,
 }
 
 .transaction-form-card,
-.transactions-list-card {
+.transactions-list-card,
+.transaction-filters-card {
   padding: 1.5rem;
   color: var(--text-primary);
   background-color: var(--surface);
   border: 1px solid var(--border);
   border-radius: 0.75rem;
   box-shadow: 0 0.5rem 1.5rem var(--shadow);
+}
+
+.transaction-filters-card > h2 {
+  margin-bottom: 0.35rem;
+}
+
+.transaction-filters-description {
+  margin-bottom: 1.25rem;
+  color: var(--text-secondary);
+}
+
+.transaction-filters-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.transaction-search-field {
+  grid-column: 1 / -1;
+}
+
+.transaction-filter-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  grid-column: 1 / -1;
+}
+
+.transaction-apply-button,
+.transaction-clear-button {
+  padding: 0.7rem 0.95rem;
+  font-weight: 600;
+  border-radius: 0.4rem;
+}
+
+.transaction-apply-button {
+  color: #ffffff;
+  background-color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.transaction-apply-button:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
+
+.transaction-clear-button {
+  color: var(--text-primary);
+  background-color: var(--surface-secondary);
+  border: 1px solid var(--border);
+}
+
+.transaction-clear-button:hover:not(:disabled) {
+  color: var(--link);
+  border-color: var(--link);
+}
+
+.transaction-apply-button:focus-visible,
+.transaction-clear-button:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+
+.transaction-filters-error {
+  grid-column: 1 / -1;
+  margin-bottom: 0;
+}
+
+.transaction-results-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.transaction-results-heading h2 {
+  margin-bottom: 0;
+}
+
+.transaction-results-count {
+  margin-bottom: 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.transaction-archived-label {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
 }
 
 .transaction-form {
@@ -1368,6 +1466,10 @@ header,
     grid-template-columns: 1fr 1fr;
   }
 
+  .transaction-filters-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .transaction-form {
     grid-template-columns: 1fr 1fr;
   }
@@ -1468,6 +1570,34 @@ header,
   .category-edit-form .form-error,
   .category-edit-actions {
     grid-column: auto;
+  }
+
+  .transaction-filters-form {
+    grid-template-columns: 1fr;
+  }
+
+  .transaction-search-field,
+  .transaction-filter-actions,
+  .transaction-filters-error {
+    grid-column: auto;
+  }
+
+  .transaction-filter-actions {
+    width: 100%;
+  }
+
+  .transaction-apply-button,
+  .transaction-clear-button {
+    flex: 1;
+  }
+
+  .transaction-results-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .transaction-results-count {
+    margin-top: -0.25rem;
   }
 
   .transaction-form {

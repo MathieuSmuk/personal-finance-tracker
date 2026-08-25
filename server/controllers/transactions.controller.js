@@ -2,6 +2,39 @@ import pool from "../db/index.js";
 
 const VALID_TRANSACTION_TYPES = ["income", "expense"];
 
+const TRANSACTION_SORT_OPTIONS = {
+  date_desc: `
+    transactions.transaction_date DESC,
+    transactions.created_at DESC,
+    transactions.id DESC
+  `,
+  date_asc: `
+    transactions.transaction_date ASC,
+    transactions.created_at ASC,
+    transactions.id ASC
+  `,
+  amount_desc: `
+    transactions.amount DESC,
+    transactions.transaction_date DESC,
+    transactions.id DESC
+  `,
+  amount_asc: `
+    transactions.amount ASC,
+    transactions.transaction_date DESC,
+    transactions.id DESC
+  `,
+  description_asc: `
+    LOWER(transactions.description) ASC,
+    transactions.transaction_date DESC,
+    transactions.id DESC
+  `,
+  description_desc: `
+    LOWER(transactions.description) DESC,
+    transactions.transaction_date DESC,
+    transactions.id DESC
+  `,
+};
+
 function isValidTransactionDate(value) {
   if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
     return false;
@@ -28,6 +61,108 @@ function getTransactionId(value) {
   }
 
   return transactionId;
+}
+
+function validateTransactionFilters(query) {
+  const {
+    transaction_type,
+    account_id,
+    category_id,
+    start_date,
+    end_date,
+    search,
+    sort = "date_desc",
+  } = query;
+
+  if (
+    transaction_type !== undefined &&
+    !VALID_TRANSACTION_TYPES.includes(transaction_type)
+  ) {
+    return {
+      error: "Transaction type filter must be income or expense.",
+    };
+  }
+
+  let accountId = null;
+
+  if (account_id !== undefined) {
+    accountId = getTransactionId(account_id);
+
+    if (accountId === null) {
+      return {
+        error: "Please provide a valid account ID filter.",
+      };
+    }
+  }
+
+  let categoryId = null;
+
+  if (category_id !== undefined) {
+    categoryId = getTransactionId(category_id);
+
+    if (categoryId === null) {
+      return {
+        error: "Please provide a valid category ID filter.",
+      };
+    }
+  }
+
+  if (start_date !== undefined && !isValidTransactionDate(start_date)) {
+    return {
+      error: "Start date must be a valid date in YYYY-MM-DD format.",
+    };
+  }
+
+  if (end_date !== undefined && !isValidTransactionDate(end_date)) {
+    return {
+      error: "End date must be a valid date in YYYY-MM-DD format.",
+    };
+  }
+
+  if (
+    start_date !== undefined &&
+    end_date !== undefined &&
+    start_date > end_date
+  ) {
+    return {
+      error: "Start date cannot be later than end date.",
+    };
+  }
+
+  if (search !== undefined && typeof search !== "string") {
+    return {
+      error: "Search must be a valid text value.",
+    };
+  }
+
+  const cleanSearch = typeof search === "string" ? search.trim() : "";
+
+  if (cleanSearch.length > 100) {
+    return {
+      error: "Search must contain no more than 100 characters.",
+    };
+  }
+
+  if (
+    typeof sort !== "string" ||
+    !Object.hasOwn(TRANSACTION_SORT_OPTIONS, sort)
+  ) {
+    return {
+      error: "Please provide a valid transaction sort option.",
+    };
+  }
+
+  return {
+    values: {
+      transactionType: transaction_type,
+      accountId,
+      categoryId,
+      startDate: start_date,
+      endDate: end_date,
+      search: cleanSearch,
+      sort,
+    },
+  };
 }
 
 function validateTransactionInput(body) {
@@ -194,15 +329,86 @@ export async function createTransaction(req, res) {
 }
 
 export async function getTransactions(req, res) {
+  const validation = validateTransactionFilters(req.query);
+
+  if (validation.error) {
+    return res.status(400).json({
+      message: validation.error,
+    });
+  }
+
+  const {
+    transactionType,
+    accountId,
+    categoryId,
+    startDate,
+    endDate,
+    search,
+    sort,
+  } = validation.values;
+
+  const conditions = ["transactions.user_id = $1"];
+
+  const values = [req.session.userId];
+
+  if (transactionType !== undefined) {
+    values.push(transactionType);
+
+    conditions.push(
+      `transactions.transaction_type = $${values.length}::VARCHAR(10)`,
+    );
+  }
+
+  if (accountId !== null) {
+    values.push(accountId);
+
+    conditions.push(`transactions.account_id = $${values.length}`);
+  }
+
+  if (categoryId !== null) {
+    values.push(categoryId);
+
+    conditions.push(`transactions.category_id = $${values.length}`);
+  }
+
+  if (startDate !== undefined) {
+    values.push(startDate);
+
+    conditions.push(`transactions.transaction_date >= $${values.length}::DATE`);
+  }
+
+  if (endDate !== undefined) {
+    values.push(endDate);
+
+    conditions.push(`transactions.transaction_date <= $${values.length}::DATE`);
+  }
+
+  if (search !== "") {
+    values.push(`%${search}%`);
+
+    const searchParameter = `$${values.length}`;
+
+    conditions.push(
+      `(
+         transactions.description ILIKE ${searchParameter}
+         OR COALESCE(transactions.notes, '') ILIKE ${searchParameter}
+       )`,
+    );
+  }
+
+  const orderBy = TRANSACTION_SORT_OPTIONS[sort];
+
   try {
     const result = await pool.query(
       `SELECT
          transactions.id,
          transactions.account_id,
          accounts.name AS account_name,
+         accounts.is_archived AS account_is_archived,
          transactions.category_id,
          categories.name AS category_name,
          categories.color AS category_color,
+         categories.is_archived AS category_is_archived,
          transactions.transaction_type,
          transactions.amount,
          transactions.description,
@@ -217,12 +423,9 @@ export async function getTransactions(req, res) {
        INNER JOIN categories
          ON categories.id = transactions.category_id
         AND categories.user_id = transactions.user_id
-       WHERE transactions.user_id = $1
-       ORDER BY
-         transactions.transaction_date DESC,
-         transactions.created_at DESC,
-         transactions.id DESC`,
-      [req.session.userId],
+       WHERE ${conditions.join(" AND ")}
+       ORDER BY ${orderBy}`,
+      values,
     );
 
     return res.status(200).json({
