@@ -279,6 +279,7 @@ header,
 .theme-toggle,
 .transaction-form-card,
 .transactions-list-card,
+.transaction-page-size select,
 .transaction-filters-card,
 .transaction-form select,
 .transaction-form input,
@@ -286,7 +287,8 @@ header,
 .transaction-edit-link,
 .transaction-delete-button,
 .transaction-apply-button,
-.transaction-clear-button {
+.transaction-clear-button,
+.transaction-page-button {
   transition:
     color 150ms ease,
     background-color 150ms ease,
@@ -324,6 +326,7 @@ header,
   .tooltip-content,
   .transaction-form-card,
   .transactions-list-card,
+  .transaction-page-size select,
   .transaction-filters-card,
   .transaction-form select,
   .transaction-form input,
@@ -331,7 +334,8 @@ header,
   .transaction-edit-link,
   .transaction-delete-button,
   .transaction-apply-button,
-  .transaction-clear-button {
+  .transaction-clear-button,
+  .transaction-page-button {
     transition: none;
   }
 }
@@ -1448,6 +1452,67 @@ header,
   border-color: var(--danger-hover);
 }
 
+.transaction-page-size {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.transaction-page-size label {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.transaction-page-size select {
+  padding: 0.5rem 0.65rem;
+  color: var(--text-primary);
+  background-color: var(--input-background);
+  border: 1px solid var(--input-border);
+  border-radius: 0.4rem;
+}
+
+.transaction-page-size select:focus {
+  border-color: var(--primary);
+  outline: 2px solid rgb(37 99 235 / 20%);
+}
+
+.transaction-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: 100%;
+  margin-top: 1.25rem;
+}
+
+.transaction-page-button {
+  padding: 0.55rem 0.85rem;
+  color: var(--text-primary);
+  font-weight: 600;
+  background-color: var(--surface-secondary);
+  border: 1px solid var(--border);
+  border-radius: 0.4rem;
+}
+
+.transaction-page-button:hover:not(:disabled) {
+  color: var(--link);
+  border-color: var(--link);
+}
+
+.transaction-page-button:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+
+.transaction-page-status {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+}
+
 @media (max-width: 800px) {
   .account-form {
     grid-template-columns: 1fr;
@@ -1611,6 +1676,29 @@ header,
   }
 
   .transaction-submit-button {
+    width: 100%;
+  }
+
+  .transaction-results-heading {
+    align-items: stretch;
+  }
+
+  .transaction-page-size {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .transaction-pagination {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .transaction-page-status {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  .transaction-page-button {
     width: 100%;
   }
 }

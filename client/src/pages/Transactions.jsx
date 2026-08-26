@@ -13,6 +13,17 @@ const DEFAULT_FILTERS = {
   sort: "date_desc",
 };
 
+const DEFAULT_PAGE_SIZE = 10;
+
+const EMPTY_PAGINATION = {
+  page: 1,
+  limit: DEFAULT_PAGE_SIZE,
+  total_items: 0,
+  total_pages: 0,
+  has_previous_page: false,
+  has_next_page: false,
+};
+
 function formatAmount(amount) {
   return new Intl.NumberFormat("en-CA", {
     style: "currency",
@@ -26,7 +37,6 @@ function formatDate(dateValue) {
   }
 
   const datePart = String(dateValue).slice(0, 10);
-
   const [year, month, day] = datePart.split("-").map(Number);
 
   const date = new Date(year, month - 1, day);
@@ -54,7 +64,7 @@ async function readJsonResponse(response, resourceName = "The server") {
   return response.json();
 }
 
-function buildTransactionQuery(filters) {
+function buildTransactionQuery(filters, page, pageSize) {
   const params = new URLSearchParams();
 
   if (filters.transactionType) {
@@ -87,14 +97,15 @@ function buildTransactionQuery(filters) {
     params.set("sort", filters.sort);
   }
 
+  params.set("page", String(page));
+  params.set("limit", String(pageSize));
+
   return params.toString();
 }
 
 function Transactions() {
   const [transactions, setTransactions] = useState([]);
-
   const [accounts, setAccounts] = useState([]);
-
   const [categories, setCategories] = useState([]);
 
   const [filters, setFilters] = useState(() => ({
@@ -105,14 +116,19 @@ function Transactions() {
     ...DEFAULT_FILTERS,
   }));
 
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+
+  const [pagination, setPagination] = useState(() => ({
+    ...EMPTY_PAGINATION,
+  }));
+
+  const [refreshKey, setRefreshKey] = useState(0);
+
   const [loading, setLoading] = useState(true);
-
   const [optionsLoading, setOptionsLoading] = useState(true);
-
   const [deletingId, setDeletingId] = useState(null);
-
   const [pageError, setPageError] = useState("");
-
   const [filterError, setFilterError] = useState("");
 
   useEffect(() => {
@@ -183,7 +199,7 @@ function Transactions() {
         setLoading(true);
         setPageError("");
 
-        const query = buildTransactionQuery(appliedFilters);
+        const query = buildTransactionQuery(appliedFilters, page, pageSize);
 
         const response = await fetch(`${API_URL}/api/transactions?${query}`, {
           credentials: "include",
@@ -198,6 +214,16 @@ function Transactions() {
 
         setTransactions(
           Array.isArray(data.transactions) ? data.transactions : [],
+        );
+
+        setPagination(
+          data.pagination && typeof data.pagination === "object"
+            ? data.pagination
+            : {
+                ...EMPTY_PAGINATION,
+                page,
+                limit: pageSize,
+              },
         );
       } catch (error) {
         if (error.name !== "AbortError") {
@@ -215,7 +241,7 @@ function Transactions() {
     return () => {
       controller.abort();
     };
-  }, [appliedFilters]);
+  }, [appliedFilters, page, pageSize, refreshKey]);
 
   function updateFilter(field, value) {
     setFilters((currentFilters) => ({
@@ -251,11 +277,14 @@ function Transactions() {
     }
 
     setFilterError("");
+    setPage(1);
 
     setAppliedFilters({
       ...filters,
       search: filters.search.trim(),
     });
+
+    setRefreshKey((currentKey) => currentKey + 1);
   }
 
   function handleClearFilters() {
@@ -264,10 +293,27 @@ function Transactions() {
     };
 
     setFilters(clearedFilters);
-
     setAppliedFilters(clearedFilters);
-
+    setPage(1);
     setFilterError("");
+    setRefreshKey((currentKey) => currentKey + 1);
+  }
+
+  function handlePreviousPage() {
+    if (!loading && pagination.has_previous_page) {
+      setPage((currentPage) => currentPage - 1);
+    }
+  }
+
+  function handleNextPage() {
+    if (!loading && pagination.has_next_page) {
+      setPage((currentPage) => currentPage + 1);
+    }
+  }
+
+  function handlePageSizeChange(event) {
+    setPageSize(Number(event.target.value));
+    setPage(1);
   }
 
   async function handleDelete(transaction) {
@@ -280,7 +326,6 @@ function Transactions() {
     }
 
     setPageError("");
-
     setDeletingId(transaction.id);
 
     try {
@@ -298,11 +343,15 @@ function Transactions() {
         throw new Error(data.message || "Unable to delete transaction.");
       }
 
-      setTransactions((currentTransactions) =>
-        currentTransactions.filter(
-          (currentTransaction) => currentTransaction.id !== transaction.id,
-        ),
-      );
+      const remainingTotalItems = Math.max(pagination.total_items - 1, 0);
+
+      const remainingTotalPages = Math.ceil(remainingTotalItems / pageSize);
+
+      if (page > 1 && page > remainingTotalPages) {
+        setPage((currentPage) => currentPage - 1);
+      } else {
+        setRefreshKey((currentKey) => currentKey + 1);
+      }
     } catch (error) {
       setPageError(error.message);
     } finally {
@@ -324,6 +373,16 @@ function Transactions() {
     Boolean(appliedFilters.endDate) ||
     Boolean(appliedFilters.search) ||
     appliedFilters.sort !== DEFAULT_FILTERS.sort;
+
+  const firstResult =
+    pagination.total_items === 0
+      ? 0
+      : (pagination.page - 1) * pagination.limit + 1;
+
+  const lastResult =
+    pagination.total_items === 0
+      ? 0
+      : Math.min(pagination.page * pagination.limit, pagination.total_items);
 
   return (
     <div className="transactions-page">
@@ -381,9 +440,7 @@ function Transactions() {
               onChange={handleTransactionTypeChange}
             >
               <option value="">All Types</option>
-
               <option value="income">Income</option>
-
               <option value="expense">Expense</option>
             </select>
           </div>
@@ -469,15 +526,10 @@ function Transactions() {
               }}
             >
               <option value="date_desc">Newest First</option>
-
               <option value="date_asc">Oldest First</option>
-
               <option value="amount_desc">Highest Amount First</option>
-
               <option value="amount_asc">Lowest Amount First</option>
-
               <option value="description_asc">Description: A to Z</option>
-
               <option value="description_desc">Description: Z to A</option>
             </select>
           </div>
@@ -511,14 +563,33 @@ function Transactions() {
 
       <section className="transactions-list-card">
         <div className="transaction-results-heading">
-          <h2>Transaction History</h2>
+          <div>
+            <h2>Transaction History</h2>
 
-          {!loading && (
-            <p className="transaction-results-count">
-              {transactions.length}{" "}
-              {transactions.length === 1 ? "transaction" : "transactions"}
-            </p>
-          )}
+            {!loading && (
+              <p className="transaction-results-count">
+                {pagination.total_items === 0
+                  ? "0 transactions"
+                  : `Showing ${firstResult}–${lastResult} of ${pagination.total_items} transactions`}
+              </p>
+            )}
+          </div>
+
+          <div className="transaction-page-size">
+            <label htmlFor="transaction-page-size">Rows per page</label>
+
+            <select
+              id="transaction-page-size"
+              value={pageSize}
+              onChange={handlePageSizeChange}
+              disabled={loading}
+            >
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+          </div>
         </div>
 
         {loading ? (
@@ -530,111 +601,135 @@ function Transactions() {
               : "You have not recorded any transactions yet."}
           </p>
         ) : (
-          <div className="transactions-table-wrapper">
-            <table className="transactions-table">
-              <thead>
-                <tr>
-                  <th scope="col">Date</th>
-
-                  <th scope="col">Description</th>
-
-                  <th scope="col">Account</th>
-
-                  <th scope="col">Category</th>
-
-                  <th scope="col">Amount</th>
-
-                  <th scope="col">Actions</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {transactions.map((transaction) => (
-                  <tr key={transaction.id}>
-                    <td>{formatDate(transaction.transaction_date)}</td>
-
-                    <td>
-                      <span className="transaction-description">
-                        {transaction.description}
-                      </span>
-
-                      {transaction.notes && (
-                        <span className="transaction-notes">
-                          {transaction.notes}
-                        </span>
-                      )}
-                    </td>
-
-                    <td>
-                      {transaction.account_name}
-
-                      {transaction.account_is_archived && (
-                        <span className="transaction-archived-label">
-                          Archived
-                        </span>
-                      )}
-                    </td>
-
-                    <td>
-                      <span className="category-label">
-                        {transaction.category_color && (
-                          <span
-                            className="category-color"
-                            style={{
-                              backgroundColor: transaction.category_color,
-                            }}
-                            aria-hidden="true"
-                          />
-                        )}
-
-                        {transaction.category_name}
-                      </span>
-
-                      {transaction.category_is_archived && (
-                        <span className="transaction-archived-label">
-                          Archived
-                        </span>
-                      )}
-                    </td>
-
-                    <td
-                      className={`transaction-amount ${
-                        transaction.transaction_type === "income"
-                          ? "transaction-income"
-                          : "transaction-expense"
-                      }`}
-                    >
-                      {transaction.transaction_type === "income" ? "+" : "-"}
-
-                      {formatAmount(transaction.amount)}
-                    </td>
-
-                    <td>
-                      <div className="transaction-actions">
-                        <Link
-                          to={`/transactions/${transaction.id}/edit`}
-                          className="transaction-edit-link"
-                        >
-                          Edit
-                        </Link>
-
-                        <button
-                          type="button"
-                          className="transaction-delete-button"
-                          onClick={() => handleDelete(transaction)}
-                          disabled={deletingId === transaction.id}
-                        >
-                          {deletingId === transaction.id
-                            ? "Deleting..."
-                            : "Delete"}
-                        </button>
-                      </div>
-                    </td>
+          <>
+            <div className="transactions-table-wrapper">
+              <table className="transactions-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Account</th>
+                    <th scope="col">Category</th>
+                    <th scope="col">Amount</th>
+                    <th scope="col">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+
+                <tbody>
+                  {transactions.map((transaction) => (
+                    <tr key={transaction.id}>
+                      <td>{formatDate(transaction.transaction_date)}</td>
+
+                      <td>
+                        <span className="transaction-description">
+                          {transaction.description}
+                        </span>
+
+                        {transaction.notes && (
+                          <span className="transaction-notes">
+                            {transaction.notes}
+                          </span>
+                        )}
+                      </td>
+
+                      <td>
+                        {transaction.account_name}
+
+                        {transaction.account_is_archived && (
+                          <span className="transaction-archived-label">
+                            Archived
+                          </span>
+                        )}
+                      </td>
+
+                      <td>
+                        <span className="category-label">
+                          {transaction.category_color && (
+                            <span
+                              className="category-color"
+                              style={{
+                                backgroundColor: transaction.category_color,
+                              }}
+                              aria-hidden="true"
+                            />
+                          )}
+
+                          {transaction.category_name}
+                        </span>
+
+                        {transaction.category_is_archived && (
+                          <span className="transaction-archived-label">
+                            Archived
+                          </span>
+                        )}
+                      </td>
+
+                      <td
+                        className={`transaction-amount ${
+                          transaction.transaction_type === "income"
+                            ? "transaction-income"
+                            : "transaction-expense"
+                        }`}
+                      >
+                        {transaction.transaction_type === "income" ? "+" : "-"}
+
+                        {formatAmount(transaction.amount)}
+                      </td>
+
+                      <td>
+                        <div className="transaction-actions">
+                          <Link
+                            to={`/transactions/${transaction.id}/edit`}
+                            className="transaction-edit-link"
+                          >
+                            Edit
+                          </Link>
+
+                          <button
+                            type="button"
+                            className="transaction-delete-button"
+                            onClick={() => handleDelete(transaction)}
+                            disabled={deletingId === transaction.id}
+                          >
+                            {deletingId === transaction.id
+                              ? "Deleting..."
+                              : "Delete"}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <nav
+              className="transaction-pagination"
+              aria-label="Transaction pagination"
+            >
+              <button
+                type="button"
+                className="transaction-page-button"
+                onClick={handlePreviousPage}
+                disabled={loading || !pagination.has_previous_page}
+              >
+                Previous
+              </button>
+
+              <span className="transaction-page-status" aria-live="polite">
+                Page {pagination.page} of {pagination.total_pages}
+              </span>
+
+              <button
+                type="button"
+                className="transaction-page-button"
+                onClick={handleNextPage}
+                disabled={loading || !pagination.has_next_page}
+              >
+                Next
+              </button>
+            </nav>
+          </>
         )}
       </section>
     </div>

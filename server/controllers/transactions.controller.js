@@ -2,6 +2,10 @@ import pool from "../db/index.js";
 
 const VALID_TRANSACTION_TYPES = ["income", "expense"];
 
+const DEFAULT_PAGE = 1;
+const DEFAULT_PAGE_SIZE = 10;
+const MAX_PAGE_SIZE = 100;
+
 const TRANSACTION_SORT_OPTIONS = {
   date_desc: `
     transactions.transaction_date DESC,
@@ -72,6 +76,8 @@ function validateTransactionFilters(query) {
     end_date,
     search,
     sort = "date_desc",
+    page = String(DEFAULT_PAGE),
+    limit = String(DEFAULT_PAGE_SIZE),
   } = query;
 
   if (
@@ -152,6 +158,41 @@ function validateTransactionFilters(query) {
     };
   }
 
+  if (typeof page !== "string" || !/^[1-9]\d*$/.test(page)) {
+    return {
+      error: "Page must be a positive whole number.",
+    };
+  }
+
+  if (typeof limit !== "string" || !/^[1-9]\d*$/.test(limit)) {
+    return {
+      error: "Page size must be a positive whole number.",
+    };
+  }
+
+  const pageNumber = Number(page);
+  const pageSize = Number(limit);
+
+  if (!Number.isSafeInteger(pageNumber)) {
+    return {
+      error: "Page must be a valid positive whole number.",
+    };
+  }
+
+  if (!Number.isSafeInteger(pageSize) || pageSize > MAX_PAGE_SIZE) {
+    return {
+      error: `Page size cannot exceed ${MAX_PAGE_SIZE} transactions.`,
+    };
+  }
+
+  const offset = (pageNumber - 1) * pageSize;
+
+  if (!Number.isSafeInteger(offset)) {
+    return {
+      error: "Requested page is too large.",
+    };
+  }
+
   return {
     values: {
       transactionType: transaction_type,
@@ -161,6 +202,9 @@ function validateTransactionFilters(query) {
       endDate: end_date,
       search: cleanSearch,
       sort,
+      page: pageNumber,
+      limit: pageSize,
+      offset,
     },
   };
 }
@@ -345,6 +389,9 @@ export async function getTransactions(req, res) {
     endDate,
     search,
     sort,
+    page,
+    limit,
+    offset,
   } = validation.values;
 
   const conditions = ["transactions.user_id = $1"];
@@ -396,40 +443,77 @@ export async function getTransactions(req, res) {
     );
   }
 
+  const whereClause = conditions.join(" AND ");
+
   const orderBy = TRANSACTION_SORT_OPTIONS[sort];
 
+  const limitParameter = `$${values.length + 1}`;
+
+  const offsetParameter = `$${values.length + 2}`;
+
+  const paginatedValues = [...values, limit, offset];
+
   try {
-    const result = await pool.query(
-      `SELECT
-         transactions.id,
-         transactions.account_id,
-         accounts.name AS account_name,
-         accounts.is_archived AS account_is_archived,
-         transactions.category_id,
-         categories.name AS category_name,
-         categories.color AS category_color,
-         categories.is_archived AS category_is_archived,
-         transactions.transaction_type,
-         transactions.amount,
-         transactions.description,
-         transactions.transaction_date,
-         transactions.notes,
-         transactions.created_at,
-         transactions.updated_at
-       FROM transactions
-       INNER JOIN accounts
-         ON accounts.id = transactions.account_id
-        AND accounts.user_id = transactions.user_id
-       INNER JOIN categories
-         ON categories.id = transactions.category_id
-        AND categories.user_id = transactions.user_id
-       WHERE ${conditions.join(" AND ")}
-       ORDER BY ${orderBy}`,
-      values,
-    );
+    const [countResult, transactionsResult] = await Promise.all([
+      pool.query(
+        `SELECT COUNT(*) AS total_items
+         FROM transactions
+         INNER JOIN accounts
+           ON accounts.id = transactions.account_id
+          AND accounts.user_id = transactions.user_id
+         INNER JOIN categories
+           ON categories.id = transactions.category_id
+          AND categories.user_id = transactions.user_id
+         WHERE ${whereClause}`,
+        values,
+      ),
+
+      pool.query(
+        `SELECT
+           transactions.id,
+           transactions.account_id,
+           accounts.name AS account_name,
+           accounts.is_archived AS account_is_archived,
+           transactions.category_id,
+           categories.name AS category_name,
+           categories.color AS category_color,
+           categories.is_archived AS category_is_archived,
+           transactions.transaction_type,
+           transactions.amount,
+           transactions.description,
+           transactions.transaction_date,
+           transactions.notes,
+           transactions.created_at,
+           transactions.updated_at
+         FROM transactions
+         INNER JOIN accounts
+           ON accounts.id = transactions.account_id
+          AND accounts.user_id = transactions.user_id
+         INNER JOIN categories
+           ON categories.id = transactions.category_id
+          AND categories.user_id = transactions.user_id
+         WHERE ${whereClause}
+         ORDER BY ${orderBy}
+         LIMIT ${limitParameter}
+         OFFSET ${offsetParameter}`,
+        paginatedValues,
+      ),
+    ]);
+
+    const totalItems = Number(countResult.rows[0].total_items);
+
+    const totalPages = Math.ceil(totalItems / limit);
 
     return res.status(200).json({
-      transactions: result.rows,
+      transactions: transactionsResult.rows,
+      pagination: {
+        page,
+        limit,
+        total_items: totalItems,
+        total_pages: totalPages,
+        has_previous_page: page > 1 && totalPages > 0,
+        has_next_page: page < totalPages,
+      },
     });
   } catch (error) {
     console.error("Unable to retrieve transactions:", error);
