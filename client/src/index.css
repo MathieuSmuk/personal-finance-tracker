@@ -104,7 +104,7 @@ p {
    Navigation
 ========================= */
 
-nav {
+header nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -125,14 +125,14 @@ nav {
   font-size: 0.9rem;
 }
 
-nav a {
+header nav a {
   color: var(--text-primary);
   font-weight: 600;
   text-decoration: none;
 }
 
-nav a:hover,
-nav a.active {
+header nav a:hover,
+header nav a.active {
   color: var(--link);
 }
 
@@ -254,6 +254,7 @@ button:disabled {
 
 body,
 header,
+.site-footer,
 .auth-card,
 .account-form-card,
 .account-card,
@@ -300,6 +301,7 @@ header,
 @media (prefers-reduced-motion: reduce) {
   body,
   header,
+  .site-footer,
   .auth-card,
   .account-form-card,
   .account-card,
@@ -1513,6 +1515,34 @@ header,
   text-align: center;
 }
 
+/* ========================================
+   FOOTER
+======================================== */
+
+.site-footer {
+  width: 100%;
+  padding: 1.25rem;
+  color: var(--text-secondary);
+  text-align: center;
+  background-color: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.site-footer p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-content {
+  flex: 1;
+}
+
 @media (max-width: 800px) {
   .account-form {
     grid-template-columns: 1fr;
@@ -1657,7 +1687,7 @@ header,
   }
 
   .transaction-results-heading {
-    align-items: flex-start;
+    align-items: stretch;
     flex-direction: column;
   }
 
@@ -1677,10 +1707,6 @@ header,
 
   .transaction-submit-button {
     width: 100%;
-  }
-
-  .transaction-results-heading {
-    align-items: stretch;
   }
 
   .transaction-page-size {

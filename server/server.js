@@ -41,24 +41,20 @@ app.get("/", (req, res) => {
   });
 });
 
-app.get("/api/health/database", async (req, res) => {
+app.get("/api/health", async (req, res) => {
   try {
-    const result = await pool.query(`
-      SELECT
-        current_database() AS database_name,
-        CURRENT_TIMESTAMP AS current_time
-    `);
+    await pool.query("SELECT 1");
 
-    res.status(200).json({
-      message: "Database connection successful!",
-      database: result.rows[0].database_name,
-      time: result.rows[0].current_time,
+    return res.status(200).json({
+      status: "ok",
+      database: "connected",
     });
   } catch (error) {
-    console.error("Database connection failed:", error);
+    console.error("Health check failed:", error);
 
-    res.status(500).json({
-      message: "Database connection failed.",
+    return res.status(503).json({
+      status: "error",
+      database: "unavailable",
     });
   }
 });

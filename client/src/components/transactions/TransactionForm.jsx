@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
 
+import API_URL from "../../config/api.js";
+
 function getToday() {
   return new Intl.DateTimeFormat("en-CA").format(new Date());
 }
@@ -98,8 +100,8 @@ function TransactionForm({
 
     try {
       const endpoint = editing
-        ? `/api/transactions/${initialTransaction.id}`
-        : "/api/transactions";
+        ? `${API_URL}/api/transactions/${initialTransaction.id}`
+        : `${API_URL}/api/transactions`;
 
       const method = editing ? "PATCH" : "POST";
 

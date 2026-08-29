@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
-import API_URL from "../config/api";
-import AuthContext from "./AuthContext";
+import API_URL from "../config/api.js";
+import AuthContext from "./AuthContext.js";
 
 function formatResponseError(data, fallbackMessage) {
   if (data.errors) {

@@ -4,6 +4,9 @@
   "description": "Backend API for the Personal Finance Tracker",
   "main": "server.js",
   "type": "module",
+  "engines": {
+    "node": ">=22.12.0 <25"
+  },
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js"

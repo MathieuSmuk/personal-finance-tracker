@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
+import API_URL from "../config/api.js";
 import TransactionForm from "../components/transactions/TransactionForm.jsx";
 
 async function readJsonResponse(response, resourceName) {
@@ -35,15 +36,15 @@ function EditTransaction() {
 
         const [transactionResponse, accountsResponse, categoriesResponse] =
           await Promise.all([
-            fetch(`/api/transactions/${id}`, {
+            fetch(`${API_URL}/api/transactions/${id}`, {
               credentials: "include",
               signal: controller.signal,
             }),
-            fetch("/api/accounts", {
+            fetch(`${API_URL}/api/accounts`, {
               credentials: "include",
               signal: controller.signal,
             }),
-            fetch("/api/categories", {
+            fetch(`${API_URL}/api/categories`, {
               credentials: "include",
               signal: controller.signal,
             }),
