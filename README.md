@@ -418,19 +418,16 @@ npm run build
 
 Postman was used to verify successful requests and expected failure responses, including authentication failures, invalid input, missing fields, ownership restrictions, filters, sorting, searching, and pagination.
 
-## Deployment Status
+## Deployment
 
-Deployment is currently in progress.
+- **Live application:** https://personal-finance-tracker-v1.onrender.com
+- **API health check:** https://personal-finance-tracker-5vdw.onrender.com/api/health
 
-The production application will use:
+The application is deployed using:
 
 - Render Static Site for the React frontend
 - Render Web Service for the Express API
 - Neon PostgreSQL for the production database
-
-The production Neon database will use `schema.sql` without the destructive development seed.
-
-Live application and API links will be added after deployment.
 
 ## Future Improvements
 
