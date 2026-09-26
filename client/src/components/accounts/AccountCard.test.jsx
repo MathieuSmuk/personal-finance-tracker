@@ -1,8 +1,9 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, test, vi } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 
 import AccountCard from "./AccountCard";
+import API_URL from "../../config/api";
 
 const exampleAccount = {
   id: 1,
@@ -29,6 +30,10 @@ function renderAccountCard(accountOverrides = {}) {
     user,
   };
 }
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe("AccountCard", () => {
   test("displays the account information", () => {
@@ -170,5 +175,72 @@ describe("AccountCard", () => {
     );
 
     expect(onAccountChanged).not.toHaveBeenCalled();
+  });
+
+  test("saves the edited account and notifies the parent component", async () => {
+    const updatedAccount = {
+      ...exampleAccount,
+      name: "Emergency Fund",
+      account_type: "savings",
+      opening_balance: "2000.75",
+    };
+
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockResolvedValue({
+        account: updatedAccount,
+      }),
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { onAccountChanged, user } = renderAccountCard();
+
+    await user.click(screen.getByRole("button", { name: "Edit" }));
+
+    const nameInput = screen.getByRole("textbox", {
+      name: "Account Name",
+    });
+    const typeSelect = screen.getByRole("combobox", {
+      name: "Account Type",
+    });
+    const balanceInput = screen.getByRole("spinbutton", {
+      name: "Opening Balance",
+    });
+
+    await user.clear(nameInput);
+    await user.type(nameInput, "Emergency Fund");
+    await user.selectOptions(typeSelect, "savings");
+    await user.clear(balanceInput);
+    await user.type(balanceInput, "2000.75");
+
+    await user.click(screen.getByRole("button", { name: "Save Changes" }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${API_URL}/api/accounts/${exampleAccount.id}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          name: "Emergency Fund",
+          account_type: "savings",
+          opening_balance: "2000.75",
+        }),
+      },
+    );
+
+    expect(onAccountChanged).toHaveBeenCalledTimes(1);
+    expect(onAccountChanged).toHaveBeenCalledWith(updatedAccount);
+
+    expect(
+      screen.queryByRole("textbox", { name: "Account Name" }),
+    ).not.toBeInTheDocument();
   });
 });
