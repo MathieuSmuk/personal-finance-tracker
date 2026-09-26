@@ -243,4 +243,38 @@ describe("AccountCard", () => {
       screen.queryByRole("textbox", { name: "Account Name" }),
     ).not.toBeInTheDocument();
   });
+
+  test("shows the API error and remains in edit mode when saving fails", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      json: vi.fn().mockResolvedValue({
+        message: "An account with this name already exists.",
+      }),
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { onAccountChanged, user } = renderAccountCard();
+
+    await user.click(screen.getByRole("button", { name: "Edit" }));
+
+    const nameInput = screen.getByRole("textbox", {
+      name: "Account Name",
+    });
+
+    await user.clear(nameInput);
+    await user.type(nameInput, "Existing Account");
+
+    await user.click(screen.getByRole("button", { name: "Save Changes" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "An account with this name already exists.",
+    );
+
+    expect(onAccountChanged).not.toHaveBeenCalled();
+
+    expect(screen.getByRole("textbox", { name: "Account Name" })).toHaveValue(
+      "Existing Account",
+    );
+  });
 });
