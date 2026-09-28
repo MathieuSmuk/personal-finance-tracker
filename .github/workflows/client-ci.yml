@@ -1,0 +1,45 @@
+name: Client CI
+
+on:
+  push:
+    branches:
+      - main
+      - testing/client-unit-tests
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  test-client:
+    name: Lint, test, and build client
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: client
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install client dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run client tests
+        run: npm run test:run
+
+      - name: Build client
+        run: npm run build
