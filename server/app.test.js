@@ -12,4 +12,13 @@ describe("Express application", () => {
       message: "Personal Finance Tracker API is running!",
     });
   });
+  test("reports that the test database is connected", async () => {
+    const response = await request(app).get("/api/health");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      status: "ok",
+      database: "connected",
+    });
+  });
 });
