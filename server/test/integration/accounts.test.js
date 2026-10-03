@@ -202,6 +202,25 @@ describe("Account routes", () => {
         }),
       );
     });
+    test("rejects an invalid account ID", async () => {
+      const agent = request.agent(app);
+
+      await registerTestUser(agent, {
+        name: "Invalid ID User",
+        email: "invalid.id@example.com",
+      });
+
+      const response = await agent.patch("/api/accounts/not-a-number").send({
+        name: "Valid Account Name",
+        account_type: "chequing",
+        opening_balance: "100.00",
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        message: "Please provide a valid account ID.",
+      });
+    });
   });
   describe("PATCH /api/accounts/:id/archive", () => {
     test("allows the owner to archive an account", async () => {
@@ -273,6 +292,167 @@ describe("Account routes", () => {
           is_archived: false,
         }),
       );
+    });
+    test("rejects a non-boolean archive status", async () => {
+      const agent = request.agent(app);
+
+      await registerTestUser(agent, {
+        name: "Archive Validation User",
+        email: "archive.validation@example.com",
+      });
+
+      const account = await createTestAccount(agent);
+
+      const response = await agent
+        .patch(`/api/accounts/${account.id}/archive`)
+        .send({
+          is_archived: "true",
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        message: "Archive status must be true or false.",
+      });
+
+      const accountsResponse = await agent.get("/api/accounts");
+
+      expect(accountsResponse.status).toBe(200);
+      expect(accountsResponse.body.accounts).toHaveLength(1);
+      expect(accountsResponse.body.accounts[0]).toEqual(
+        expect.objectContaining({
+          id: account.id,
+          is_archived: false,
+        }),
+      );
+    });
+  });
+  describe("POST /api/accounts", () => {
+    test("rejects account creation by unauthenticated users", async () => {
+      const response = await request(app).post("/api/accounts").send({
+        name: "Unauthorized Account",
+        account_type: "chequing",
+        opening_balance: "100.00",
+      });
+
+      expect(response.status).toBe(401);
+      expect(response.body).toEqual({
+        message: "Authentication required.",
+      });
+    });
+
+    test("rejects an account without a name", async () => {
+      const agent = request.agent(app);
+
+      await registerTestUser(agent, {
+        name: "Validation User",
+        email: "validation.user@example.com",
+      });
+
+      const response = await agent.post("/api/accounts").send({
+        account_type: "chequing",
+        opening_balance: "100.00",
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        message: "Validation failed.",
+        errors: [
+          {
+            field: "name",
+            message: "Account name must be between 1 and 100 characters.",
+          },
+        ],
+      });
+
+      const accountsResponse = await agent.get("/api/accounts");
+
+      expect(accountsResponse.status).toBe(200);
+      expect(accountsResponse.body.accounts).toEqual([]);
+    });
+
+    test("rejects an unsupported account type", async () => {
+      const agent = request.agent(app);
+
+      await registerTestUser(agent, {
+        name: "Validation User",
+        email: "validation.user@example.com",
+      });
+
+      const response = await agent.post("/api/accounts").send({
+        name: "Investment Account",
+        account_type: "investment",
+        opening_balance: "100.00",
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        message: "Validation failed.",
+        errors: [
+          {
+            field: "account_type",
+            message: "Account type must be chequing, savings, or cash.",
+          },
+        ],
+      });
+    });
+
+    test("rejects a balance with more than two decimal places", async () => {
+      const agent = request.agent(app);
+
+      await registerTestUser(agent, {
+        name: "Validation User",
+        email: "validation.user@example.com",
+      });
+
+      const response = await agent.post("/api/accounts").send({
+        name: "Invalid Balance",
+        account_type: "savings",
+        opening_balance: "100.999",
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        message: "Validation failed.",
+        errors: [
+          {
+            field: "opening_balance",
+            message:
+              "Opening balance must be a valid amount with no more than two decimal places.",
+          },
+        ],
+      });
+    });
+
+    test("rejects duplicate account names for the same user", async () => {
+      const agent = request.agent(app);
+
+      await registerTestUser(agent, {
+        name: "Duplicate User",
+        email: "duplicate.user@example.com",
+      });
+
+      await createTestAccount(agent, {
+        name: "Everyday Chequing",
+        account_type: "chequing",
+        opening_balance: "500.00",
+      });
+
+      const response = await agent.post("/api/accounts").send({
+        name: "Everyday Chequing",
+        account_type: "savings",
+        opening_balance: "750.00",
+      });
+
+      expect(response.status).toBe(409);
+      expect(response.body).toEqual({
+        message: "An account with that name already exists.",
+      });
+
+      const accountsResponse = await agent.get("/api/accounts");
+
+      expect(accountsResponse.status).toBe(200);
+      expect(accountsResponse.body.accounts).toHaveLength(1);
+      expect(accountsResponse.body.accounts[0].name).toBe("Everyday Chequing");
     });
   });
 });
