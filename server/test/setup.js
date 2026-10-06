@@ -1,22 +1,26 @@
 import dotenv from "dotenv";
 import { afterAll } from "vitest";
 
-const result = dotenv.config({
-  path: ".env.test",
-  override: true,
-});
+const isCI = process.env.CI === "true";
 
-if (result.error) {
-  throw new Error(
-    "Unable to load server/.env.test. Copy .env.test.example to .env.test and add your local test database credentials.",
-  );
+if (!isCI) {
+  const result = dotenv.config({
+    path: ".env.test",
+    override: true,
+  });
+
+  if (result.error) {
+    throw new Error(
+      "Unable to load server/.env.test. Copy .env.test.example to .env.test and add your local test database credentials.",
+    );
+  }
 }
 
 process.env.NODE_ENV = "test";
 
 if (process.env.DATABASE_URL) {
   throw new Error(
-    "Database tests must not use DATABASE_URL. Configure the local test database with DB_NAME instead.",
+    "Database tests must not use DATABASE_URL. Configure the test database with DB_NAME instead.",
   );
 }
 
