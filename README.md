@@ -1,5 +1,8 @@
 # Personal Finance Tracker
 
+[![Client CI](https://github.com/MathieuSmuk/personal-finance-tracker/actions/workflows/client-ci.yml/badge.svg)](https://github.com/MathieuSmuk/personal-finance-tracker/actions/workflows/client-ci.yml)
+[![Server CI](https://github.com/MathieuSmuk/personal-finance-tracker/actions/workflows/server-ci.yml/badge.svg)](https://github.com/MathieuSmuk/personal-finance-tracker/actions/workflows/server-ci.yml)
+
 A full-stack personal finance application for organizing accounts, categories, income, and expenses. Users can securely create an account, record financial activity, review account balances, and explore transaction history through searching, filtering, sorting, and pagination.
 
 This project was built as a portfolio application to demonstrate full-stack JavaScript development with React, Express, PostgreSQL, authentication, relational database design, and responsive user-interface development.
@@ -181,6 +184,97 @@ personal-finance-tracker/
 ├── PROJECT_PLAN.md
 └── README.md
 ```
+
+## Testing
+
+This project includes automated client unit tests and server integration tests.
+
+### Client Tests
+
+The client test suite uses Vitest, React Testing Library, and jsdom. It covers component rendering, user interaction, form validation, editable account cards, and account save behavior.
+
+Run the client tests from the repository root:
+
+```bash
+npm --prefix client run test:run
+```
+
+Run all client quality checks:
+
+```bash
+npm --prefix client run lint
+npm --prefix client run test:run
+npm --prefix client run build
+```
+
+### Server Integration Tests
+
+The server test suite uses Vitest and Supertest with a dedicated PostgreSQL test database. It covers authentication, protected routes, validation, account ownership, category ownership, and transaction ownership.
+
+Run the server tests from the repository root:
+
+```bash
+npm --prefix server run test:run
+```
+
+### First-Time Server Test Setup
+
+These steps are only required when setting up the repository on a new computer.
+
+1. Create a dedicated PostgreSQL database named:
+
+```text
+personal_finance_tracker_test
+```
+
+2. Copy the test environment template.
+
+PowerShell:
+
+```powershell
+Copy-Item server/.env.test.example server/.env.test
+```
+
+macOS or Linux:
+
+```bash
+cp server/.env.test.example server/.env.test
+```
+
+3. Update `server/.env.test` with the credentials for the local test database. Make sure it includes:
+
+```env
+DB_NAME=personal_finance_tracker_test
+NODE_ENV=test
+DATABASE_URL=
+```
+
+4. Apply the database schema from the repository root:
+
+```bash
+psql -U postgres -d personal_finance_tracker_test -f server/db/schema.sql
+```
+
+The schema can also be applied by opening `server/db/schema.sql` in pgAdmin's Query Tool and executing it against `personal_finance_tracker_test`.
+
+5. Run the server tests:
+
+```bash
+npm --prefix server run test:run
+```
+
+The test setup refuses to run unless the database name ends with `_test`. This helps protect the development and production databases from test cleanup operations.
+
+If the test database already exists and the server tests pass, skip this setup section and run the test command normally.
+
+### Continuous Integration
+
+GitHub Actions automatically runs the following checks on pull requests and pushes to `main`:
+
+- Client linting, unit tests, and production build
+- Server integration tests using a temporary PostgreSQL service database
+
+The GitHub Actions database is separate from the local test database. Local PostgreSQL credentials and `.env.test` are not uploaded to GitHub.
 
 ## Local Installation
 
