@@ -146,6 +146,10 @@ This project was built as a portfolio application to demonstrate full-stack Java
 
 ```text
 personal-finance-tracker/
+├──.github/
+│   ├── workflows/
+│   │    ├── client-ci.yml
+│   │    └── server-ci.yml
 ├── client/
 │   ├── public/
 │   ├── src/
@@ -176,6 +180,9 @@ personal-finance-tracker/
 │   │   └── seed.sql
 │   ├── middleware/
 │   ├── routes/
+|   ├── test/
+│       ├── integration/
+│       └── setup.js
 │   ├── validators/
 │   ├── .env.example
 │   ├── package.json
@@ -290,11 +297,9 @@ Install the following before running the project:
 ### Clone the repository
 
 ```bash
-git clone https://github.com/YOUR-USERNAME/personal-finance-tracker.git
+git clone https://github.com/MathieuSmuk/personal-finance-tracker.git
 cd personal-finance-tracker
 ```
-
-Replace `YOUR-USERNAME` with the GitHub username that owns the repository.
 
 ### Install the server dependencies
 
@@ -418,7 +423,7 @@ The seed creates:
 - More than 40 transactions
 - Data suitable for testing searching, filtering, sorting, pagination, and historical records
 
-Demo credentials:
+Local development demo credentials:
 
 ```text
 Email: demo@example.com
@@ -488,29 +493,19 @@ The Express API is organized into the following route groups:
 
 Protected API routes require an authenticated session.
 
-## Testing
+## Manual Testing
 
-The application has been tested through:
+In addition to the automated test suites, the application has been manually tested through:
 
 - Postman API requests
 - Browser-based user-interface testing
 - PostgreSQL constraint testing
 - Authentication and authorization checks
-- Client and server validation tests
 - Responsive viewport testing
 - Light and dark theme testing
 - React Router direct-navigation and refresh testing
-- ESLint
-- Vite production builds
 
-Run the frontend checks from the `client` directory:
-
-```bash
-npm run lint
-npm run build
-```
-
-Postman was used to verify successful requests and expected failure responses, including authentication failures, invalid input, missing fields, ownership restrictions, filters, sorting, searching, and pagination.
+Postman was used to verify successful requests and expected failure responses, including authentication failures, invalid input, missing fields, ownership restrictions, filtering, sorting, searching, and pagination.
 
 ## Deployment
 
@@ -531,7 +526,6 @@ Possible future enhancements include:
 - Recurring transactions
 - CSV transaction exports
 - Additional dashboard charts
-- Automated integration tests
 - Password change and account-recovery workflows
 - Email verification
 - User profile settings
