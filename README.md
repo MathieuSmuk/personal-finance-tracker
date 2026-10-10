@@ -1,5 +1,8 @@
 # Personal Finance Tracker
 
+[![Client CI](https://github.com/MathieuSmuk/personal-finance-tracker/actions/workflows/client-ci.yml/badge.svg)](https://github.com/MathieuSmuk/personal-finance-tracker/actions/workflows/client-ci.yml)
+[![Server CI](https://github.com/MathieuSmuk/personal-finance-tracker/actions/workflows/server-ci.yml/badge.svg)](https://github.com/MathieuSmuk/personal-finance-tracker/actions/workflows/server-ci.yml)
+
 A full-stack personal finance application for organizing accounts, categories, income, and expenses. Users can securely create an account, record financial activity, review account balances, and explore transaction history through searching, filtering, sorting, and pagination.
 
 This project was built as a portfolio application to demonstrate full-stack JavaScript development with React, Express, PostgreSQL, authentication, relational database design, and responsive user-interface development.
@@ -143,6 +146,10 @@ This project was built as a portfolio application to demonstrate full-stack Java
 
 ```text
 personal-finance-tracker/
+├──.github/
+│   ├── workflows/
+│   │    ├── client-ci.yml
+│   │    └── server-ci.yml
 ├── client/
 │   ├── public/
 │   ├── src/
@@ -173,6 +180,9 @@ personal-finance-tracker/
 │   │   └── seed.sql
 │   ├── middleware/
 │   ├── routes/
+|   ├── test/
+│       ├── integration/
+│       └── setup.js
 │   ├── validators/
 │   ├── .env.example
 │   ├── package.json
@@ -181,6 +191,97 @@ personal-finance-tracker/
 ├── PROJECT_PLAN.md
 └── README.md
 ```
+
+## Testing
+
+This project includes automated client unit tests and server integration tests.
+
+### Client Tests
+
+The client test suite uses Vitest, React Testing Library, and jsdom. It covers component rendering, user interaction, form validation, editable account cards, and account save behavior.
+
+Run the client tests from the repository root:
+
+```bash
+npm --prefix client run test:run
+```
+
+Run all client quality checks:
+
+```bash
+npm --prefix client run lint
+npm --prefix client run test:run
+npm --prefix client run build
+```
+
+### Server Integration Tests
+
+The server test suite uses Vitest and Supertest with a dedicated PostgreSQL test database. It covers authentication, protected routes, validation, account ownership, category ownership, and transaction ownership.
+
+Run the server tests from the repository root:
+
+```bash
+npm --prefix server run test:run
+```
+
+### First-Time Server Test Setup
+
+These steps are only required when setting up the repository on a new computer.
+
+1. Create a dedicated PostgreSQL database named:
+
+```text
+personal_finance_tracker_test
+```
+
+2. Copy the test environment template.
+
+PowerShell:
+
+```powershell
+Copy-Item server/.env.test.example server/.env.test
+```
+
+macOS or Linux:
+
+```bash
+cp server/.env.test.example server/.env.test
+```
+
+3. Update `server/.env.test` with the credentials for the local test database. Make sure it includes:
+
+```env
+DB_NAME=personal_finance_tracker_test
+NODE_ENV=test
+DATABASE_URL=
+```
+
+4. Apply the database schema from the repository root:
+
+```bash
+psql -U postgres -d personal_finance_tracker_test -f server/db/schema.sql
+```
+
+The schema can also be applied by opening `server/db/schema.sql` in pgAdmin's Query Tool and executing it against `personal_finance_tracker_test`.
+
+5. Run the server tests:
+
+```bash
+npm --prefix server run test:run
+```
+
+The test setup refuses to run unless the database name ends with `_test`. This helps protect the development and production databases from test cleanup operations.
+
+If the test database already exists and the server tests pass, skip this setup section and run the test command normally.
+
+### Continuous Integration
+
+GitHub Actions automatically runs the following checks on pull requests and pushes to `main`:
+
+- Client linting, unit tests, and production build
+- Server integration tests using a temporary PostgreSQL service database
+
+The GitHub Actions database is separate from the local test database. Local PostgreSQL credentials and `.env.test` are not uploaded to GitHub.
 
 ## Local Installation
 
@@ -196,11 +297,9 @@ Install the following before running the project:
 ### Clone the repository
 
 ```bash
-git clone https://github.com/YOUR-USERNAME/personal-finance-tracker.git
+git clone https://github.com/MathieuSmuk/personal-finance-tracker.git
 cd personal-finance-tracker
 ```
-
-Replace `YOUR-USERNAME` with the GitHub username that owns the repository.
 
 ### Install the server dependencies
 
@@ -324,7 +423,7 @@ The seed creates:
 - More than 40 transactions
 - Data suitable for testing searching, filtering, sorting, pagination, and historical records
 
-Demo credentials:
+Local development demo credentials:
 
 ```text
 Email: demo@example.com
@@ -394,29 +493,19 @@ The Express API is organized into the following route groups:
 
 Protected API routes require an authenticated session.
 
-## Testing
+## Manual Testing
 
-The application has been tested through:
+In addition to the automated test suites, the application has been manually tested through:
 
 - Postman API requests
 - Browser-based user-interface testing
 - PostgreSQL constraint testing
 - Authentication and authorization checks
-- Client and server validation tests
 - Responsive viewport testing
 - Light and dark theme testing
 - React Router direct-navigation and refresh testing
-- ESLint
-- Vite production builds
 
-Run the frontend checks from the `client` directory:
-
-```bash
-npm run lint
-npm run build
-```
-
-Postman was used to verify successful requests and expected failure responses, including authentication failures, invalid input, missing fields, ownership restrictions, filters, sorting, searching, and pagination.
+Postman was used to verify successful requests and expected failure responses, including authentication failures, invalid input, missing fields, ownership restrictions, filtering, sorting, searching, and pagination.
 
 ## Deployment
 
@@ -437,7 +526,6 @@ Possible future enhancements include:
 - Recurring transactions
 - CSV transaction exports
 - Additional dashboard charts
-- Automated integration tests
 - Password change and account-recovery workflows
 - Email verification
 - User profile settings
