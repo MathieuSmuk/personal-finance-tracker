@@ -43,8 +43,12 @@ async function createTestCategory(agent, categoryDetails = {}) {
 }
 
 async function createTwoUsersWithResources() {
-  const firstUserAgent = request.agent(app);
-  const secondUserAgent = request.agent(app);
+  const firstUserAgent = request
+    .agent(app)
+    .set("Origin", process.env.CLIENT_URL);
+  const secondUserAgent = request
+    .agent(app)
+    .set("Origin", process.env.CLIENT_URL);
 
   await registerTestUser(firstUserAgent, {
     name: "First Transaction User",
@@ -119,8 +123,12 @@ describe("Category and transaction ownership", () => {
 
   describe("Category ownership", () => {
     test("returns only categories owned by the authenticated user", async () => {
-      const firstUserAgent = request.agent(app);
-      const secondUserAgent = request.agent(app);
+      const firstUserAgent = request
+        .agent(app)
+        .set("Origin", process.env.CLIENT_URL);
+      const secondUserAgent = request
+        .agent(app)
+        .set("Origin", process.env.CLIENT_URL);
 
       await registerTestUser(firstUserAgent, {
         name: "First Category User",
@@ -168,8 +176,12 @@ describe("Category and transaction ownership", () => {
     });
 
     test("does not allow another user to update or archive a category", async () => {
-      const ownerAgent = request.agent(app);
-      const otherUserAgent = request.agent(app);
+      const ownerAgent = request
+        .agent(app)
+        .set("Origin", process.env.CLIENT_URL);
+      const otherUserAgent = request
+        .agent(app)
+        .set("Origin", process.env.CLIENT_URL);
 
       await registerTestUser(ownerAgent, {
         name: "Category Owner",

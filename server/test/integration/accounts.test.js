@@ -51,7 +51,7 @@ describe("Account routes", () => {
     });
 
     test("returns an empty account list for a newly registered user", async () => {
-      const agent = request.agent(app);
+      const agent = request.agent(app).set("Origin", process.env.CLIENT_URL);
 
       await registerTestUser(agent, {
         name: "Test User",
@@ -67,8 +67,12 @@ describe("Account routes", () => {
     });
 
     test("returns only accounts owned by the authenticated user", async () => {
-      const firstUserAgent = request.agent(app);
-      const secondUserAgent = request.agent(app);
+      const firstUserAgent = request
+        .agent(app)
+        .set("Origin", process.env.CLIENT_URL);
+      const secondUserAgent = request
+        .agent(app)
+        .set("Origin", process.env.CLIENT_URL);
 
       await registerTestUser(firstUserAgent, {
         name: "First User",
@@ -124,7 +128,9 @@ describe("Account routes", () => {
   });
   describe("PATCH /api/accounts/:id", () => {
     test("allows the owner to update an account", async () => {
-      const ownerAgent = request.agent(app);
+      const ownerAgent = request
+        .agent(app)
+        .set("Origin", process.env.CLIENT_URL);
 
       await registerTestUser(ownerAgent, {
         name: "Account Owner",
@@ -155,8 +161,12 @@ describe("Account routes", () => {
       );
     });
     test("does not allow another user to update the account", async () => {
-      const ownerAgent = request.agent(app);
-      const otherUserAgent = request.agent(app);
+      const ownerAgent = request
+        .agent(app)
+        .set("Origin", process.env.CLIENT_URL);
+      const otherUserAgent = request
+        .agent(app)
+        .set("Origin", process.env.CLIENT_URL);
 
       await registerTestUser(ownerAgent, {
         name: "Account Owner",
@@ -203,7 +213,7 @@ describe("Account routes", () => {
       );
     });
     test("rejects an invalid account ID", async () => {
-      const agent = request.agent(app);
+      const agent = request.agent(app).set("Origin", process.env.CLIENT_URL);
 
       await registerTestUser(agent, {
         name: "Invalid ID User",
@@ -224,7 +234,9 @@ describe("Account routes", () => {
   });
   describe("PATCH /api/accounts/:id/archive", () => {
     test("allows the owner to archive an account", async () => {
-      const ownerAgent = request.agent(app);
+      const ownerAgent = request
+        .agent(app)
+        .set("Origin", process.env.CLIENT_URL);
 
       await registerTestUser(ownerAgent, {
         name: "Archive Owner",
@@ -251,8 +263,12 @@ describe("Account routes", () => {
     });
 
     test("does not allow another user to archive the account", async () => {
-      const ownerAgent = request.agent(app);
-      const otherUserAgent = request.agent(app);
+      const ownerAgent = request
+        .agent(app)
+        .set("Origin", process.env.CLIENT_URL);
+      const otherUserAgent = request
+        .agent(app)
+        .set("Origin", process.env.CLIENT_URL);
 
       await registerTestUser(ownerAgent, {
         name: "Archive Owner",
@@ -294,7 +310,7 @@ describe("Account routes", () => {
       );
     });
     test("rejects a non-boolean archive status", async () => {
-      const agent = request.agent(app);
+      const agent = request.agent(app).set("Origin", process.env.CLIENT_URL);
 
       await registerTestUser(agent, {
         name: "Archive Validation User",
@@ -328,11 +344,14 @@ describe("Account routes", () => {
   });
   describe("POST /api/accounts", () => {
     test("rejects account creation by unauthenticated users", async () => {
-      const response = await request(app).post("/api/accounts").send({
-        name: "Unauthorized Account",
-        account_type: "chequing",
-        opening_balance: "100.00",
-      });
+      const response = await request(app)
+        .post("/api/accounts")
+        .set("Origin", process.env.CLIENT_URL)
+        .send({
+          name: "Unauthorized Account",
+          account_type: "chequing",
+          opening_balance: "100.00",
+        });
 
       expect(response.status).toBe(401);
       expect(response.body).toEqual({
@@ -341,7 +360,7 @@ describe("Account routes", () => {
     });
 
     test("rejects an account without a name", async () => {
-      const agent = request.agent(app);
+      const agent = request.agent(app).set("Origin", process.env.CLIENT_URL);
 
       await registerTestUser(agent, {
         name: "Validation User",
@@ -371,7 +390,7 @@ describe("Account routes", () => {
     });
 
     test("rejects an unsupported account type", async () => {
-      const agent = request.agent(app);
+      const agent = request.agent(app).set("Origin", process.env.CLIENT_URL);
 
       await registerTestUser(agent, {
         name: "Validation User",
@@ -397,7 +416,7 @@ describe("Account routes", () => {
     });
 
     test("rejects a balance with more than two decimal places", async () => {
-      const agent = request.agent(app);
+      const agent = request.agent(app).set("Origin", process.env.CLIENT_URL);
 
       await registerTestUser(agent, {
         name: "Validation User",
@@ -424,7 +443,7 @@ describe("Account routes", () => {
     });
 
     test("rejects duplicate account names for the same user", async () => {
-      const agent = request.agent(app);
+      const agent = request.agent(app).set("Origin", process.env.CLIENT_URL);
 
       await registerTestUser(agent, {
         name: "Duplicate User",
