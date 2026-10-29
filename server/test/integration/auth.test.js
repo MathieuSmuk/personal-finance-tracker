@@ -37,7 +37,7 @@ describe("Authentication routes", () => {
 
   describe("POST /api/auth/register", () => {
     test("registers and authenticates a new user", async () => {
-      const agent = request.agent(app);
+      const agent = request.agent(app).set("Origin", process.env.CLIENT_URL);
 
       const { response, registrationDetails } = await registerUser(agent);
 
@@ -69,8 +69,12 @@ describe("Authentication routes", () => {
     });
 
     test("rejects an email that is already registered", async () => {
-      const firstAgent = request.agent(app);
-      const secondAgent = request.agent(app);
+      const firstAgent = request
+        .agent(app)
+        .set("Origin", process.env.CLIENT_URL);
+      const secondAgent = request
+        .agent(app)
+        .set("Origin", process.env.CLIENT_URL);
 
       await registerUser(firstAgent, {
         email: "duplicate@example.com",
@@ -92,7 +96,9 @@ describe("Authentication routes", () => {
 
   describe("POST /api/auth/login", () => {
     test("authenticates a user with valid credentials", async () => {
-      const registrationAgent = request.agent(app);
+      const registrationAgent = request
+        .agent(app)
+        .set("Origin", process.env.CLIENT_URL);
 
       const { response: registrationResponse } = await registerUser(
         registrationAgent,
@@ -102,7 +108,9 @@ describe("Authentication routes", () => {
         },
       );
 
-      const loginAgent = request.agent(app);
+      const loginAgent = request
+        .agent(app)
+        .set("Origin", process.env.CLIENT_URL);
 
       const loginResponse = await loginAgent.post("/api/auth/login").send({
         email: "LOGIN.USER@example.com",
@@ -131,13 +139,17 @@ describe("Authentication routes", () => {
     });
 
     test("rejects an incorrect password without creating an authenticated session", async () => {
-      const registrationAgent = request.agent(app);
+      const registrationAgent = request
+        .agent(app)
+        .set("Origin", process.env.CLIENT_URL);
 
       await registerUser(registrationAgent, {
         email: "wrong.password@example.com",
       });
 
-      const loginAgent = request.agent(app);
+      const loginAgent = request
+        .agent(app)
+        .set("Origin", process.env.CLIENT_URL);
 
       const loginResponse = await loginAgent.post("/api/auth/login").send({
         email: "wrong.password@example.com",
@@ -158,7 +170,7 @@ describe("Authentication routes", () => {
     });
 
     test("rejects an email that is not registered", async () => {
-      const agent = request.agent(app);
+      const agent = request.agent(app).set("Origin", process.env.CLIENT_URL);
 
       const response = await agent.post("/api/auth/login").send({
         email: "missing.user@example.com",
@@ -185,7 +197,7 @@ describe("Authentication routes", () => {
 
   describe("POST /api/auth/logout", () => {
     test("destroys the authenticated session", async () => {
-      const agent = request.agent(app);
+      const agent = request.agent(app).set("Origin", process.env.CLIENT_URL);
 
       await registerUser(agent, {
         email: "logout.user@example.com",
@@ -206,6 +218,40 @@ describe("Authentication routes", () => {
 
       expect(loggedOutResponse.status).toBe(401);
       expect(loggedOutResponse.body).toEqual({
+        message: "Authentication required.",
+      });
+    });
+    test("rejects a saved session cookie after logout", async () => {
+      const agent = request.agent(app).set("Origin", process.env.CLIENT_URL);
+
+      const { response } = await registerUser(agent, {
+        email: "logout.replay@example.com",
+      });
+
+      const sessionCookie = response.headers["set-cookie"]
+        ?.find((cookie) => cookie.startsWith("finance.sid="))
+        ?.split(";")[0];
+
+      expect(sessionCookie).toBeDefined();
+
+      // Verify that this exact cookie authenticates before logout.
+      const beforeLogout = await request(app)
+        .get("/api/auth/me")
+        .set("Cookie", sessionCookie);
+
+      expect(beforeLogout.status).toBe(200);
+
+      const logoutResponse = await agent.post("/api/auth/logout");
+
+      expect(logoutResponse.status).toBe(200);
+
+      // Replay the saved cookie using a separate request.
+      const afterLogout = await request(app)
+        .get("/api/auth/me")
+        .set("Cookie", sessionCookie);
+
+      expect(afterLogout.status).toBe(401);
+      expect(afterLogout.body).toEqual({
         message: "Authentication required.",
       });
     });

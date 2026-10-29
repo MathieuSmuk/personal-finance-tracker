@@ -9,6 +9,7 @@ import categoriesRouter from "./routes/categories.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
 import transactionsRouter from "./routes/transactions.routes.js";
 import sessionMiddleware from "./config/session.js";
+import { createRequireTrustedOrigin } from "./middleware/requireTrustedOrigin.js";
 
 const app = express();
 
@@ -22,6 +23,8 @@ app.use(
     credentials: true,
   }),
 );
+
+app.use("/api", createRequireTrustedOrigin(process.env.CLIENT_URL));
 
 app.use(express.json());
 app.use(sessionMiddleware);
